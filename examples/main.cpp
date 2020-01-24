@@ -19,15 +19,18 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#ifndef DV_DATASET_STREAMER_H_
-#define DV_DATASET_STREAMER_H_
+#include "dv_mico/streamers/DvStreamer.h" 
 
+int main(int _argc, char **_argv){
 
-namespace dv_mico{
+    dv_mico::DvStreamer *streamer;
+    streamer = dv_mico::DvStreamer::create(dv_mico::DvStreamer::eModel::dataset);
 
+    std::string datasetPath = "";
+    if (!streamer->init(datasetPath)){
+        std::cout << "Error creating streamer" << std::endl;
+        return 0;
+    }
 
-
-    
+    return 0;
 }
-
-#endif

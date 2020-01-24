@@ -22,6 +22,7 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 PROJECT(dv_mico VERSION 0.1)
 
+option(BUILD_EXAMPLES		"Compile examples"	OFF)
 
 #########################################
 ######			General config	   ######
@@ -59,6 +60,13 @@ endif(${dv_FOUND})
 find_package(OpenCV REQUIRED)
 if(${OpenCV_FOUND})
   target_include_directories(${PROJECT_NAME} PUBLIC ${OpenCV_INCLUDE_DIRS})
-  target_link_libraries(${PROJECT_NAME} LINK_PRIVATE ${OpenCV_LIBS})
+  target_link_libraries(${PROJECT_NAME} LINK_PUBLIC ${OpenCV_LIBS})
   target_compile_definitions(${PROJECT_NAME} PUBLIC "HAS_OPENCV")
 endif()
+
+#########################################
+######			EXAMPLES        		   ######
+#########################################
+if(${BUILD_EXAMPLES})
+  add_subdirectory(examples)
+endif(${BUILD_EXAMPLES})
