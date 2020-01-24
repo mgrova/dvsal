@@ -20,9 +20,9 @@
 //---------------------------------------------------------------------------------------------------------------------
 
 
-#include "dv_mico/streamers/DvCameraStreamer.h"
+#include "dvsal/streamers/DvCameraStreamer.h"
 
-namespace dv_mico{
+namespace dvsal{
 
     bool DvCameraStreamer::init(const std::string &_string){
 

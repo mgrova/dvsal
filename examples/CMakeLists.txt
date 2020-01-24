@@ -1,5 +1,5 @@
 ##---------------------------------------------------------------------------------------------------------------------
-##  DV-MICO
+##  DVSAL
 ##---------------------------------------------------------------------------------------------------------------------
 ##  Copyright 2019 - Marco Montes Grova (a.k.a. marrcogrova) 
 ##---------------------------------------------------------------------------------------------------------------------
@@ -21,4 +21,4 @@
 
 add_executable(simple_example main.cpp)
 target_include_directories(simple_example PRIVATE ../include)
-target_link_libraries(simple_example LINK_PUBLIC dv_mico )
+target_link_libraries(simple_example LINK_PUBLIC dvsal )

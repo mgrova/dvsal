@@ -19,19 +19,22 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#ifndef DV_DATASET_STREAMER_H_
-#define DV_DATASET_STREAMER_H_
+#ifndef DV_CAMERA_STREAMER_H_
+#define DV_CAMERA_STREAMER_H_
 
-#include "dv_mico/streamers/DvStreamer.h"
 
-namespace dv_mico{
+#include "dvsal/streamers/DvStreamer.h"
 
-    class DvDatasetStreamer : public DvStreamer{
+namespace dvsal{
+
+    class DvCameraStreamer : public DvStreamer{
     public:
 		  bool init(const std::string &_string = "");
 		  bool events(dv::Event _event);
 
     };
+
+    
 
     
 }

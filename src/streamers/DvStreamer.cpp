@@ -20,11 +20,11 @@
 //---------------------------------------------------------------------------------------------------------------------
 
 
-#include "dv_mico/streamers/DvStreamer.h"
-#include "dv_mico/streamers/DvDatasetStreamer.h"
-#include "dv_mico/streamers/DvCameraStreamer.h"
+#include "dvsal/streamers/DvStreamer.h"
+#include "dvsal/streamers/DvDatasetStreamer.h"
+#include "dvsal/streamers/DvCameraStreamer.h"
 
-namespace dv_mico{
+namespace dvsal{
 
     DvStreamer * DvStreamer::create(eModel _type) {
 		if (_type == eModel::dataset) {

@@ -1,5 +1,5 @@
 ##---------------------------------------------------------------------------------------------------------------------
-##  DV-MICO
+##  DVSAL
 ##---------------------------------------------------------------------------------------------------------------------
 ##  Copyright 2019 - Marco Montes Grova (a.k.a. marrcogrova) 
 ##---------------------------------------------------------------------------------------------------------------------
@@ -20,7 +20,7 @@
 ##---------------------------------------------------------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
-PROJECT(dv_mico VERSION 0.1)
+PROJECT(dvsal VERSION 0.1)
 
 option(BUILD_EXAMPLES		"Compile examples"	ON)
 
@@ -32,10 +32,10 @@ add_definitions(-std=c++17 -pthread -lpthread)
 #########################################
 ######			Library	   ######
 #########################################
-file(GLOB_RECURSE DV_MICO_HEADERS "./include/*.h" "./include/*.inl")
-file(GLOB_RECURSE DV_MICO_SOURCES "./src/*.cpp")
+file(GLOB_RECURSE DVSAL_HEADERS "./include/*.h" "./include/*.inl")
+file(GLOB_RECURSE DVSAL_SOURCES "./src/*.cpp")
 
-add_library(${PROJECT_NAME} SHARED ${DV_MICO_HEADERS} ${DV_MICO_SOURCES})
+add_library(${PROJECT_NAME} SHARED ${DVSAL_HEADERS} ${DVSAL_SOURCES})
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE C)
 

@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------------------------------------------------
-//  DV-MICO
+//  DVSAL
 //---------------------------------------------------------------------------------------------------------------------
 //  Copyright 2019 - Marco Montes Grova (a.k.a. marrcogrova) 
 //---------------------------------------------------------------------------------------------------------------------
@@ -19,12 +19,12 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#include "dv_mico/streamers/DvStreamer.h" 
+#include "dvsal/streamers/DvStreamer.h" 
 
 int main(int _argc, char **_argv){
 
-    dv_mico::DvStreamer *streamer;
-    streamer = dv_mico::DvStreamer::create(dv_mico::DvStreamer::eModel::dataset);
+    dvsal::DvStreamer *streamer;
+    streamer = dvsal::DvStreamer::create(dvsal::DvStreamer::eModel::dataset);
 
     std::string datasetPath = "";
     if (!streamer->init(datasetPath)){

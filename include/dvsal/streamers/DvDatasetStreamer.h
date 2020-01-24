@@ -19,29 +19,17 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#ifndef DV_STREAMER_H_
-#define DV_STREAMER_H_
+#ifndef DV_DATASET_STREAMER_H_
+#define DV_DATASET_STREAMER_H_
 
-#include <string>
-#include <iostream>
+#include "dvsal/streamers/DvStreamer.h"
 
-#include <dv-sdk/processing.hpp>
-#include <dv-sdk/config.hpp>
+namespace dvsal{
 
-#include <opencv2/opencv.hpp>
-
-namespace dv_mico{
-
-    class DvStreamer{
+    class DvDatasetStreamer : public DvStreamer{
     public:
-      enum class eModel { dataset , dvs128 };
-
-		  static DvStreamer *create(eModel _type);
-		  static DvStreamer *create(std::string _type);
-
-    public:
-		  virtual bool init(const std::string &_string = "") = 0;
-		  virtual bool events(dv::Event _event) = 0;
+		  bool init(const std::string &_string = "");
+		  bool events(dv::Event _event);
 
     };
 

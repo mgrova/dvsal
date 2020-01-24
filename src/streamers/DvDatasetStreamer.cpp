@@ -20,9 +20,9 @@
 //---------------------------------------------------------------------------------------------------------------------
 
 
-#include "dv_mico/streamers/DvDatasetStreamer.h"
+#include "dvsal/streamers/DvDatasetStreamer.h"
 
-namespace dv_mico{
+namespace dvsal{
 
     bool DvDatasetStreamer::init(const std::string &_string){
 
