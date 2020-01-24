@@ -27,6 +27,7 @@
 
 #include <dv-sdk/processing.hpp>
 #include <dv-sdk/config.hpp>
+
 #include <opencv2/opencv.hpp>
 
 namespace dv_mico{

@@ -21,4 +21,4 @@
 
 add_executable(simple_example main.cpp)
 target_include_directories(simple_example PRIVATE ../include)
-target_link_libraries(simple_example LINK_PRIVATE dv_mico )
+target_link_libraries(simple_example LINK_PUBLIC dv_mico )

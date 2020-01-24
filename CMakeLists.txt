@@ -22,7 +22,7 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 PROJECT(dv_mico VERSION 0.1)
 
-option(BUILD_EXAMPLES		"Compile examples"	OFF)
+option(BUILD_EXAMPLES		"Compile examples"	ON)
 
 #########################################
 ######			General config	   ######
@@ -50,19 +50,31 @@ target_link_libraries(${PROJECT_NAME} LINK_PUBLIC pthread)
 ######			Dependencies       ######
 #########################################
 
+find_package(libcaer)
+if (${libcaer_FOUND})
+  target_link_libraries(${PROJECT_NAME} LINK_PUBLIC libcaer::caer)
+  target_compile_definitions(${PROJECT_NAME} PUBLIC HAS_LIBCAER)
+endif(${libcaer_FOUND})
+
 find_package(dv)
 if (${dv_FOUND})
-  target_include_directories(${PROJECT_NAME} PUBLIC ${dv_INCLUDE_DIRS})
-  target_link_libraries(${PROJECT_NAME} LINK_PUBLIC ${dv_LIBRARIES})
-  target_compile_definitions(${PROJECT_NAME} PUBLIC HAS_DV)    
+  target_include_directories(${PROJECT_NAME} PUBLIC ${DV_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME} LINK_PUBLIC ${DV_LIBRARIES} dv::dvsdk)
+  target_compile_definitions(${PROJECT_NAME} PUBLIC HAS_DV)
 endif(${dv_FOUND})
 
 find_package(OpenCV REQUIRED)
 if(${OpenCV_FOUND})
   target_include_directories(${PROJECT_NAME} PUBLIC ${OpenCV_INCLUDE_DIRS})
   target_link_libraries(${PROJECT_NAME} LINK_PUBLIC ${OpenCV_LIBS})
-  target_compile_definitions(${PROJECT_NAME} PUBLIC "HAS_OPENCV")
+  target_compile_definitions(${PROJECT_NAME} PUBLIC HAS_OPENCV)
 endif()
+
+find_package(Boost REQUIRED COMPONENTS system filesystem)
+if (${Boost_FOUND})
+  target_link_libraries(${PROJECT_NAME} LINK_PUBLIC Boost::boost Boost::system Boost::filesystem)
+  target_compile_definitions(${PROJECT_NAME} PUBLIC HAS_BOOST)
+endif(${Boost_FOUND})
 
 #########################################
 ######			EXAMPLES        		   ######
