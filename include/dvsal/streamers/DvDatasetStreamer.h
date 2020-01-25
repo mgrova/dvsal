@@ -38,11 +38,9 @@ namespace dvsal{
         bool step();
 
     private:
-        std::ifstream* datasetFile_;
+        std::ifstream datasetFile_;
 
-        // dv::Event events_;
         dv::EventStore events_;
-
     };
 
     

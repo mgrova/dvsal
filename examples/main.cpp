@@ -22,25 +22,39 @@
 #include "dvsal/streamers/DvStreamer.h" 
 #include "thread"
 
+bool run = true;
+dvsal::DvStreamer *streamer = nullptr;
+
 int main(int _argc, char **_argv){
 
-    dvsal::DvStreamer *streamer;
     streamer = dvsal::DvStreamer::create(dvsal::DvStreamer::eModel::dataset);
 
-    std::string datasetPath = _argv[1];
+    std::string datasetPath = "/home/grvc/Downloads/shapes_translation/events.txt";
     if (!streamer->init(datasetPath)){
         std::cout << "Error creating streamer" << std::endl;
         return 0;
     }
+
+    std::thread t([](){
+        while (run){
+            // std::cout << "thread function to visualize image \n";
+            
+            cv::Mat img = cv::Mat::zeros(cv::Size(240,180), CV_8UC3);
+            streamer->image(img);
+            
+            cv::imshow("events",img);
+            cv::waitKey(1);
+
+            std::this_thread::sleep_for( std::chrono::milliseconds(30) );
+        }
+    });
     
-    bool run = true;
     while(run){
-
-
         run = streamer->step();
         
-        std::this_thread::sleep_for( std::chrono::milliseconds(30) );
+        // std::this_thread::sleep_for( std::chrono::milliseconds(1) );
     }
+    t.join();
 
     std::cout << "finished program" << std::endl;
 

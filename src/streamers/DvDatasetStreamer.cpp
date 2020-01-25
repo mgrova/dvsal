@@ -19,20 +19,19 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-
+#include <boost/filesystem.hpp>
 #include "dvsal/streamers/DvDatasetStreamer.h"
 
 namespace dvsal{
 
     bool DvDatasetStreamer::init(const std::string &_string){
-        datasetFile_ = new std::ifstream(_string);
-
-        datasetFile_->open(_string);
+        datasetFile_ = std::ifstream(_string);
         
-        if(!datasetFile_->is_open()){
-            std::cout << "Error reading dataset file" << std::endl;
+        if(!boost::filesystem::exists(_string)){
+            std::cout << "Dataset file not exist" << std::endl;
             return false;
         }
+
         return true;
     }
 
@@ -40,28 +39,42 @@ namespace dvsal{
     bool DvDatasetStreamer::step(){
         
         std::string line;
-        std::getline(*datasetFile_, line);
+        std::getline(datasetFile_, line);  
+
         std::istringstream iss(line);
         float timestamp;
         int x, y, pol;
         
         iss >> timestamp >> x >> y >> pol;
-        if (!iss.eof())
+        if (iss.good()){
+            datasetFile_.close();
             return false;
+        }
+        dv::Event event(static_cast<int64_t>(timestamp * 1000000) , static_cast<int16_t>(x) , static_cast<int16_t>(y) , static_cast<uint8_t>(pol));
         
-        events_.add(dv::Event(x,y,pol,timestamp));
-        std::cout << events_.size() << std::endl ;
+        events_.add(event);
+
         return true;
     }
 
 
     bool DvDatasetStreamer::events(dv::EventStore &_events){
-
+        
 
     } 
 
     bool DvDatasetStreamer::image(cv::Mat &_image){
 
+        dv::EventStore eventsLast30000microseconds = events_.sliceTime(-10000); //666   
 
+        for (const auto &event : eventsLast30000microseconds) {
+            if (event.polarity())
+                _image.at<cv::Vec3b>(event.y(), event.x()) = cv::Vec3b(0,0,255);
+            else
+                _image.at<cv::Vec3b>(event.y(), event.x()) = cv::Vec3b(0,255,0);
+        }
+
+
+        return true;
     }    
 }
