@@ -25,7 +25,7 @@ namespace dvsal{
     BlockDvDatasetStreamer::BlockDvDatasetStreamer(){
         streamer_ = DvStreamer::create(DvStreamer::eModel::dataset);
         
-        createPipe("events", "v-events");
+        createPipe("events", "v_events");
         createPipe("events-size", "int");
     }
 

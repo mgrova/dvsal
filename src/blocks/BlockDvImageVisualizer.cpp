@@ -24,7 +24,7 @@
 namespace dvsal{
 
     BlockDvImageVisualizer::BlockDvImageVisualizer(){
-        createPolicy({{"DVS Events","v-event"}});
+        createPolicy({{"DVS Events","v_event"}});
 
         registerCallback({"DVS Events"}, 
                             [&](flow::DataFlow _data){

@@ -24,9 +24,9 @@
 namespace dvsal{
 
     BlockDvCornerDetector::BlockDvCornerDetector(){
-        createPipe("Corners events", "v-events");
+        createPipe("Corners events", "v_events");
         
-        createPolicy({{"Unfiltered events", "v-events"}});
+        createPolicy({{"Unfiltered events", "v_events"}});
         registerCallback({"Unfiltered events"}, 
                                 [&](flow::DataFlow _data){
                                     if(idle_){
