@@ -26,12 +26,23 @@ namespace dvsal{
 
     bool DvCameraStreamer::init(const std::string &_string){
 
-
+        return false;
     }
 
-    bool DvCameraStreamer::events(dv::Event _event){
+    bool DvCameraStreamer::step(){
+
+        return false;
+    }
+
+    bool DvCameraStreamer::events(dv::EventStore &_events){
+
+        return false;
+    }    
+
+    bool DvCameraStreamer::image(cv::Mat &_image){
 
 
+        return false;
     }    
 
 

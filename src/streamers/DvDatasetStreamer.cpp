@@ -25,11 +25,42 @@
 namespace dvsal{
 
     bool DvDatasetStreamer::init(const std::string &_string){
+        datasetFile_ = new std::ifstream(_string);
 
-
+        datasetFile_->open(_string);
+        
+        if(!datasetFile_->is_open()){
+            std::cout << "Error reading dataset file" << std::endl;
+            return false;
+        }
+        return true;
     }
 
-    bool DvDatasetStreamer::events(dv::Event _event){
+
+    bool DvDatasetStreamer::step(){
+        
+        std::string line;
+        std::getline(*datasetFile_, line);
+        std::istringstream iss(line);
+        float timestamp;
+        int x, y, pol;
+        
+        iss >> timestamp >> x >> y >> pol;
+        if (!iss.eof())
+            return false;
+        
+        events_.add(dv::Event(x,y,pol,timestamp));
+        std::cout << events_.size() << std::endl ;
+        return true;
+    }
+
+
+    bool DvDatasetStreamer::events(dv::EventStore &_events){
+
+
+    } 
+
+    bool DvDatasetStreamer::image(cv::Mat &_image){
 
 
     }    

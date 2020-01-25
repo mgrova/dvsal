@@ -20,17 +20,29 @@
 //---------------------------------------------------------------------------------------------------------------------
 
 #include "dvsal/streamers/DvStreamer.h" 
+#include "thread"
 
 int main(int _argc, char **_argv){
 
     dvsal::DvStreamer *streamer;
     streamer = dvsal::DvStreamer::create(dvsal::DvStreamer::eModel::dataset);
 
-    std::string datasetPath = "";
+    std::string datasetPath = _argv[1];
     if (!streamer->init(datasetPath)){
         std::cout << "Error creating streamer" << std::endl;
         return 0;
     }
+    
+    bool run = true;
+    while(run){
+
+
+        run = streamer->step();
+        
+        std::this_thread::sleep_for( std::chrono::milliseconds(30) );
+    }
+
+    std::cout << "finished program" << std::endl;
 
     return 0;
 }

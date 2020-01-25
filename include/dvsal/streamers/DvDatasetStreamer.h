@@ -24,12 +24,24 @@
 
 #include "dvsal/streamers/DvStreamer.h"
 
+#include <fstream>
+#include <sstream>
+#include <string>
+
 namespace dvsal{
 
     class DvDatasetStreamer : public DvStreamer{
     public:
-		  bool init(const std::string &_string = "");
-		  bool events(dv::Event _event);
+		bool init(const std::string &_string);
+		bool events(dv::EventStore &_events);
+        bool image(cv::Mat &_image); // Fake image using events
+        bool step();
+
+    private:
+        std::ifstream* datasetFile_;
+
+        // dv::Event events_;
+        dv::EventStore events_;
 
     };
 

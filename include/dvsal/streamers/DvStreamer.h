@@ -27,6 +27,7 @@
 
 #include <dv-sdk/processing.hpp>
 #include <dv-sdk/config.hpp>
+#include <dv-sdk/utils.h>
 
 #include <opencv2/opencv.hpp>
 
@@ -41,8 +42,10 @@ namespace dvsal{
 
     public:
 		  virtual bool init(const std::string &_string = "") = 0;
-		  virtual bool events(dv::Event _event) = 0;
-
+		  virtual bool step() = 0;
+      
+      virtual bool events(dv::EventStore &_events) = 0;
+      virtual bool image(cv::Mat &_image) = 0; // Fake image using events
     };
 
     
