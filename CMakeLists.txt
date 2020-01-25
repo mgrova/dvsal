@@ -82,3 +82,57 @@ endif(${Boost_FOUND})
 if(${BUILD_EXAMPLES})
   add_subdirectory(examples)
 endif(${BUILD_EXAMPLES})
+
+
+#########################################
+######			INSTALL 		   ######
+#########################################
+include(CMakePackageConfigHelpers)
+
+
+## INSTALLATION C++ Library
+if(NOT DEFINED CMAKE_INSTALL_PREFIX)
+  set(CMAKE_INSTALL_PREFIX "/usr/local")
+endif() 
+
+install(TARGETS dvsal
+        EXPORT dvsalTargets
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        INCLUDES DESTINATION ${CMAKE_INSTALL_PREFIX}
+        )
+
+write_basic_package_version_file(
+  dvsalConfigVersion.cmake
+    VERSION ${PACKAGE_VERSION}
+    COMPATIBILITY AnyNewerVersion
+    )
+
+
+# This installs the include folder
+install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_PREFIX} FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_PREFIX} FILES_MATCHING PATTERN "*.inl")
+
+export(TARGETS dvsal NAMESPACE dvsal:: FILE dvsal.cmake)
+
+# This generates dvsalTargets.cmake
+install(EXPORT dvsalTargets
+    FILE dvsalTargets.cmake
+    NAMESPACE dvsal::
+    DESTINATION lib/cmake/dvsal
+    )
+
+configure_file(dvsalConfig.cmake.in dvsalConfig.cmake @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/dvsalConfig.cmake"
+        DESTINATION lib/cmake/dvsal
+        )
+
+# uninstall target 
+if(NOT TARGET uninstall) 
+  configure_file( 
+      "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in" 
+      "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake" 
+      IMMEDIATE @ONLY) 
+ 
+  add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake) 
+endif() 

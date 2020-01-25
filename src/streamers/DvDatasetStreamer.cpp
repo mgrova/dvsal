@@ -59,8 +59,9 @@ namespace dvsal{
 
 
     bool DvDatasetStreamer::events(dv::EventStore &_events){
-        
+        _events = events_;
 
+        return true;
     } 
 
     bool DvDatasetStreamer::image(cv::Mat &_image){
@@ -78,3 +79,4 @@ namespace dvsal{
         return true;
     }    
 }
+
