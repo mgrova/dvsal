@@ -24,20 +24,20 @@
 namespace dvsal{
 
     BlockDvCornerDetector::BlockDvCornerDetector(){
-        createPipe("Corners events", "image");
+        createPipe("Corners events", "v-events");
         
-        createPolicy({{"Unfiltered events", "image"}});
+        createPolicy({{"Unfiltered events", "v-events"}});
         registerCallback({"Unfiltered events"}, 
                                 [&](flow::DataFlow _data){
                                     if(idle_){
                                         idle_ = false;
-                                        // auto UnfiltEvents = _data.get<dv::EventStore>("Unfiltered events");
-                                        // detector_->eventCallback(UnfiltEvents);
-                                        // dv::EventStore corners = detector_->cornersDetected();
+                                        auto UnfiltEvents = _data.get<dv::EventStore>("Unfiltered events");
+                                        detector_->eventCallback(UnfiltEvents);
+                                        dv::EventStore corners = detector_->cornersDetected();
                                         
-                                        // if(corners.events.size() > 0){
-                                        //     getPipe("Corners events")->flush(corners);
-                                        // }
+                                        if(corners.size() > 0){
+                                            getPipe("Corners events")->flush(corners);
+                                        }
                                         idle_ = true;
                                     }
                                 }

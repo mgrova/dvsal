@@ -19,54 +19,37 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#include "dvsal/blocks/BlockDvDatasetStreamer.h"
+#ifndef BLOCK_DV_IMAGE_VISUALIZER_H_
+#define BLOCK_DV_IMAGE_VISUALIZER_H_
+
+#include <flow/flow.h>
+#include <opencv2/opencv.hpp>
+
+#include <dv-sdk/processing.hpp>
+#include <dv-sdk/config.hpp>
+#include <dv-sdk/utils.h>
 
 namespace dvsal{
-    BlockDvDatasetStreamer::BlockDvDatasetStreamer(){
-        streamer_ = DvStreamer::create(DvStreamer::eModel::dataset);
+
+    class BlockDvImageVisualizer: public flow::Block{
+    public:
+        std::string name() override {return "DV Image Visualizer";};
+        std::string description() const override {return "Flow wrapper of DVS Image Visualizer";};
+
+        BlockDvImageVisualizer();
         
-        createPipe("events", "v-events");
-        createPipe("events-size", "int");
-    }
+    private:
+        cv::Mat convertEventsToCVMat(dv::EventStore _events);      
 
-    bool BlockDvDatasetStreamer::configure(std::unordered_map<std::string, std::string> _params){
-        if(isRunningLoop()) // Cant configure if already running.
-            return false;   
-
-        std::string datasetPath = _params["dataset_path"];
-
-        if(!streamer_->init(datasetPath.c_str()))
-            return false;
- 
-        return true;
-    }
-
-    std::vector<std::string> BlockDvDatasetStreamer::parameters(){
-        return {
-            "dataset_path" 
-        };
-    }
-
-
-    void BlockDvDatasetStreamer::loopCallback() {
-        while(isRunningLoop()){
-
-            streamer_->step();
-
-            if(getPipe("events")->registrations() !=0 ){
-                dv::EventStore rawEvents;
-                streamer_->events(rawEvents);
-                getPipe("events")->flush(rawEvents);     
-            }
-
-            if(getPipe("events-size")->registrations() !=0 ){
-                dv::EventStore store;
-                streamer_->events(store);
-                std::cout <<static_cast<int>(store.size()) <<std::endl;
-                getPipe("events-size")->flush(static_cast<int>(store.size()));
-            }    
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
-    }
-
+    private:
+        bool idle_ = true;
+    };
 }
+
+// extern "C" flow::PluginNodeCreator* factory(){
+//     flow::PluginNodeCreator *creator = new flow::PluginNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<dvsal::BlockDvImageVisualizer, true>>(); });
+
+//     return creator;
+// }
+
+#endif

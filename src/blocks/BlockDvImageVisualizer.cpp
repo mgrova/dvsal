@@ -19,54 +19,40 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#include "dvsal/blocks/BlockDvDatasetStreamer.h"
+#include "dvsal/blocks/BlockDvImageVisualizer.h"
 
 namespace dvsal{
-    BlockDvDatasetStreamer::BlockDvDatasetStreamer(){
-        streamer_ = DvStreamer::create(DvStreamer::eModel::dataset);
-        
-        createPipe("events", "v-events");
-        createPipe("events-size", "int");
-    }
 
-    bool BlockDvDatasetStreamer::configure(std::unordered_map<std::string, std::string> _params){
-        if(isRunningLoop()) // Cant configure if already running.
-            return false;   
+    BlockDvImageVisualizer::BlockDvImageVisualizer(){
+        createPolicy({{"DVS Events","v-event"}});
 
-        std::string datasetPath = _params["dataset_path"];
-
-        if(!streamer_->init(datasetPath.c_str()))
-            return false;
+        registerCallback({"DVS Events"}, 
+                            [&](flow::DataFlow _data){
+                                if(idle_){
+                                    idle_ = false;  
+                                        
+                                    dv::EventStore events = _data.get<dv::EventStore>("DVS Events");
+                                    cv::Mat fakeImage = convertEventsToCVMat(events);
  
-        return true;
+                                    cv::imshow("events",fakeImage);
+                                    cv::waitKey(1);
+
+                                    idle_ = true;
+                                }
+
+                            }
+                        );
     }
 
-    std::vector<std::string> BlockDvDatasetStreamer::parameters(){
-        return {
-            "dataset_path" 
-        };
-    }
-
-
-    void BlockDvDatasetStreamer::loopCallback() {
-        while(isRunningLoop()){
-
-            streamer_->step();
-
-            if(getPipe("events")->registrations() !=0 ){
-                dv::EventStore rawEvents;
-                streamer_->events(rawEvents);
-                getPipe("events")->flush(rawEvents);     
+    cv::Mat BlockDvImageVisualizer::convertEventsToCVMat(dv::EventStore _events){
+            cv::Mat image = cv::Mat::zeros(cv::Size(240,180), CV_8UC3);
+            for (const auto &event : _events) {
+                if (event.polarity())
+                    image.at<cv::Vec3b>(event.y(), event.x()) = cv::Vec3b(0,0,255);
+                else
+                    image.at<cv::Vec3b>(event.y(), event.x()) = cv::Vec3b(0,255,0);
             }
 
-            if(getPipe("events-size")->registrations() !=0 ){
-                dv::EventStore store;
-                streamer_->events(store);
-                std::cout <<static_cast<int>(store.size()) <<std::endl;
-                getPipe("events-size")->flush(static_cast<int>(store.size()));
-            }    
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
-    }
-
+            return image;
+        };        
 }
