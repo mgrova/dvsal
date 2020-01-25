@@ -19,40 +19,41 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#ifndef BLOCK_DV_DATASET_STREAMER_H_
-#define BLOCK_DV_DATASET_STREAMER_H_
+#ifndef BLOCK_DV_CORNERDETECTOR_H_
+#define BLOCK_DV_CORNERDETECTOR_H_
 
 #include <flow/flow.h>
-#include "dvsal/streamers/DvStreamer.h"
+
+#include <dvsal/processors/corner_detectors/Detector.h>
+#include <dvsal/processors/corner_detectors/HarrisDetector.h>
+#include <dvsal/processors/corner_detectors/FastDetector.h>
 
 namespace dvsal{
 
-    class BlockDvDatasetStreamer : public flow::Block{
+    class BlockDvCornerDetector: public flow::Block{
     public:
-        std::string name() override {return "DV Dataset Streamer";};
-        std::string description() const override {return "Flow wrapper of DVS Dataset Streamer";};
+        std::string name() override {return "DV Corner Detector";};
+        std::string description() const override {return "Flow wrapper of DVS Corners Detector";};
 
-        BlockDvDatasetStreamer();
 
+        BlockDvCornerDetector();
+    
         virtual bool configure(std::unordered_map<std::string, std::string> _params) override;
         std::vector<std::string> parameters() override;
-
-    protected:
-        virtual void loopCallback() override;
-
-
+        
     private:
         
-        DvStreamer *streamer_;
 
+    private:
+        Detector* detector_ = nullptr;
+        bool idle_ = true;
     };
 }
 
-extern "C" flow::PluginNodeCreator* factory(){
-    flow::PluginNodeCreator *creator = new flow::PluginNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<dvsal::BlockDvDatasetStreamer, true>>(); });
+// extern "C" flow::PluginNodeCreator* factory(){
+//     flow::PluginNodeCreator *creator = new flow::PluginNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<dvsal::BlockDvCornerDetector>>(); });
 
-    return creator;
-}
-
+//     return creator;
+// }
 
 #endif

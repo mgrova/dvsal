@@ -76,6 +76,11 @@ if (${Boost_FOUND})
   target_compile_definitions(${PROJECT_NAME} PUBLIC HAS_BOOST)
 endif(${Boost_FOUND})
 
+find_package(Eigen3 REQUIRED)
+if(${Eigen3_FOUND})
+  target_include_directories(${PROJECT_NAME} PUBLIC "/usr/include/eigen3")
+endif()
+
 find_package(flow REQUIRED)
 target_link_libraries(${PROJECT_NAME} LINK_PUBLIC flow::flow)
 
