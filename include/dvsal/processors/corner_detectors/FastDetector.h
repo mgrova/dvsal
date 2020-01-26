@@ -35,6 +35,9 @@ namespace dvsal{
       FastDetector();
       virtual ~FastDetector();
 
+      virtual std::string name() override {return "FAST";}
+      virtual QWidget * customWidget() override {return nullptr;}
+
       bool isFeature(const dv::Event &e);
 
     private:

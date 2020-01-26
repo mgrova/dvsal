@@ -28,32 +28,48 @@
 #include <dvsal/processors/corner_detectors/HarrisDetector.h>
 #include <dvsal/processors/corner_detectors/FastDetector.h>
 
+#include <mutex>
+
 namespace dvsal{
 
     class BlockDvCornerDetector: public flow::Block{
     public:
         std::string name() override {return "DV Corner Detector";};
-        std::string description() const override {return "Flow wrapper of DVS Corners Detector";};
-
+        std::string description() const override {return "Flow wrapper of DVS Corners Detector.\n"
+                                                          "- FAST\n"
+                                                          "- HARRIS\n";};
 
         BlockDvCornerDetector();
-    
-        virtual bool configure(std::unordered_map<std::string, std::string> _params) override;
-        std::vector<std::string> parameters() override;
+
+        virtual QWidget * customWidget(){
+            return visualContainer_;
+        }
+
         
     private:
-        
+        void initVisualization();
+
+        std::vector<Detector *> detectorList();
+
+        void changeDetector(int _index);
 
     private:
-        Detector* detector_ = nullptr;
         bool idle_ = true;
+
+        std::mutex detectorGuard_;
+        std::vector<Detector *> detectorList_;
+        Detector* currentDetector_;
+        
+        QComboBox *detectorSelector_ = nullptr;
+        QGroupBox *visualContainer_ = nullptr;
+        QVBoxLayout *mainLayout_ = nullptr;
     };
 }
 
-// extern "C" flow::PluginNodeCreator* factory(){
-//     flow::PluginNodeCreator *creator = new flow::PluginNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<dvsal::BlockDvCornerDetector>>(); });
+extern "C" flow::PluginNodeCreator* factory(){
+    flow::PluginNodeCreator *creator = new flow::PluginNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<dvsal::BlockDvCornerDetector>>(); });
 
-//     return creator;
-// }
+    return creator;
+}
 
 #endif

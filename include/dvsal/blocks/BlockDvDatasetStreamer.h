@@ -48,11 +48,11 @@ namespace dvsal{
     };
 }
 
-extern "C" flow::PluginNodeCreator* factory(){
-    flow::PluginNodeCreator *creator = new flow::PluginNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<dvsal::BlockDvDatasetStreamer, true>>(); });
+// extern "C" flow::PluginNodeCreator* factory(){
+//     flow::PluginNodeCreator *creator = new flow::PluginNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<dvsal::BlockDvDatasetStreamer, true>>(); });
 
-    return creator;
-}
+//     return creator;
+// }
 
 
 #endif

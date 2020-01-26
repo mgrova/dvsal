@@ -24,6 +24,11 @@
 namespace dvsal{
 
     BlockDvCornerDetector::BlockDvCornerDetector(){
+        detectorList_ = { new FastDetector,
+                          new HarrisDetector };
+
+        initVisualization();
+
         createPipe("Corners events", "v_events");
         
         createPolicy({{"Unfiltered events", "v_events"}});
@@ -32,9 +37,10 @@ namespace dvsal{
                                     if(idle_){
                                         idle_ = false;
                                         auto UnfiltEvents = _data.get<dv::EventStore>("Unfiltered events");
-                                        detector_->eventCallback(UnfiltEvents);
-                                        dv::EventStore corners = detector_->cornersDetected();
-                                        
+                                        detectorGuard_.lock();
+                                        currentDetector_->eventCallback(UnfiltEvents);
+                                        dv::EventStore corners = currentDetector_->cornersDetected();
+                                        detectorGuard_.unlock();
                                         if(corners.size() > 0){
                                             getPipe("Corners events")->flush(corners);
                                         }
@@ -42,33 +48,43 @@ namespace dvsal{
                                     }
                                 }
         );
-
-
     }
 
-    bool BlockDvCornerDetector::configure(std::unordered_map<std::string, std::string> _params){
-        std::string detecMethod;
-        for(auto &param: _params){
-            if(param.second == "")
-                return false;
+    void BlockDvCornerDetector::initVisualization(){
+        visualContainer_ = new QGroupBox();
+        mainLayout_ = new QVBoxLayout();
+        visualContainer_->setLayout(mainLayout_);
 
-            if(param.first == "Detection_method"){
-                detecMethod = param.second;
-            }
-        }
-        if (detecMethod == "harris"){
-            detector_ = new HarrisDetector;
-        }
-        else if (detecMethod == "fast"){
-            detector_ = new FastDetector;
-        }else{
-            return false;
+        detectorSelector_ = new QComboBox();
+        mainLayout_->addWidget(detectorSelector_);
+
+        for(auto &detector:detectorList()){
+            detectorSelector_->addItem(detector->name().c_str());
         }
 
-        return true;
+        QWidget::connect(detectorSelector_, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int _n){ this->changeDetector(_n); });
+        currentDetector_ = detectorList_[0];
+        detectorSelector_->setCurrentIndex(0);
     }
-    
-    std::vector<std::string> BlockDvCornerDetector::parameters(){
-        return {"Detection_method"};
+
+    std::vector<Detector*> BlockDvCornerDetector::detectorList(){
+        return detectorList_;
+    }
+
+    void BlockDvCornerDetector::changeDetector(int _index){
+        detectorGuard_.lock();
+
+        if(currentDetector_->customWidget()){
+            currentDetector_->customWidget()->setVisible(false);
+            mainLayout_->removeWidget(currentDetector_->customWidget());
+        }
+        currentDetector_ = detectorList_[_index];
+        auto widget = currentDetector_->customWidget();
+        if(widget){
+            widget->setVisible(true);
+            mainLayout_->addWidget(widget);
+        }
+
+        detectorGuard_.unlock();
     }
 }

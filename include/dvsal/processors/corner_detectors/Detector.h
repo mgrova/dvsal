@@ -26,6 +26,11 @@
 #include <dv-sdk/config.hpp>
 #include <dv-sdk/utils.h>
 
+#include <QComboBox>
+#include <QGroupBox>
+#include <QVBoxLayout>
+#include <QLineEdit>
+
 namespace dvsal{
 
   class Detector{
@@ -42,6 +47,9 @@ namespace dvsal{
 
       // interface
       void eventCallback(const dv::EventStore &_msg);
+
+      virtual QWidget * customWidget() = 0;
+      virtual std::string name() = 0;
 
     protected:
       std::string detectorName_;

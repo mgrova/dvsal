@@ -58,8 +58,7 @@ endif(${libcaer_FOUND})
 
 find_package(dv)
 if (${dv_FOUND})
-  target_include_directories(${PROJECT_NAME} PUBLIC ${DV_INCLUDE_DIRS})
-  target_link_libraries(${PROJECT_NAME} LINK_PUBLIC ${DV_LIBRARIES} dv::dvsdk)
+  target_link_libraries(${PROJECT_NAME} LINK_PUBLIC dv::dvsdk)
   target_compile_definitions(${PROJECT_NAME} PUBLIC HAS_DV)
 endif(${dv_FOUND})
 
@@ -82,7 +81,10 @@ if(${Eigen3_FOUND})
 endif()
 
 find_package(flow REQUIRED)
-target_link_libraries(${PROJECT_NAME} LINK_PUBLIC flow::flow)
+if (${flow_FOUND})
+  target_link_libraries(${PROJECT_NAME} LINK_PUBLIC flow::flow)
+  target_compile_definitions(${PROJECT_NAME} PUBLIC HAS_FLOW)
+endif(${flow_FOUND})
 
 #########################################
 ######			EXAMPLES        		   ######

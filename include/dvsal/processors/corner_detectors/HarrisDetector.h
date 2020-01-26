@@ -38,6 +38,9 @@ namespace dvsal{
 
     bool isFeature(const dv::Event &e);
 
+    virtual std::string name() override {return "HARRIS";}
+    virtual QWidget * customWidget() override {return nullptr;}
+
     double getLastScore() const {
       return lastScore_;
     }
