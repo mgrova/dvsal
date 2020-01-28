@@ -50,13 +50,13 @@ target_link_libraries(${PROJECT_NAME} LINK_PUBLIC pthread)
 ######			Dependencies       ######
 #########################################
 
-find_package(libcaer)
+find_package(libcaer REQUIRED)
 if (${libcaer_FOUND})
   target_link_libraries(${PROJECT_NAME} LINK_PUBLIC libcaer::caer)
   target_compile_definitions(${PROJECT_NAME} PUBLIC HAS_LIBCAER)
 endif(${libcaer_FOUND})
 
-find_package(dv)
+find_package(dv REQUIRED)
 if (${dv_FOUND})
   target_link_libraries(${PROJECT_NAME} LINK_PUBLIC dv::dvsdk)
   target_compile_definitions(${PROJECT_NAME} PUBLIC HAS_DV)
