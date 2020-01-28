@@ -19,33 +19,28 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#ifndef BLOCK_DV_DATASET_STREAMER_H_
-#define BLOCK_DV_DATASET_STREAMER_H_
+#ifndef DVSAL_FLOW_H_
+#define DVSAL_FLOW_H_
 
 #include <flow/flow.h>
-#include "dvsal/streamers/DvStreamer.h"
+
+#include "dvsal/blocks/BlockDvImageVisualizer.h"
+#include "dvsal/blocks/BlockDvCornerDetector.h"
+#include "dvsal/blocks/BlockDvDatasetStreamer.h"
 
 namespace dvsal{
 
-    class BlockDvDatasetStreamer : public flow::Block{
-    public:
-        std::string name() override {return "DV Dataset Streamer";};
-        std::string description() const override {return "Flow wrapper of DVS Dataset Streamer";};
+    extern "C" flow::PluginNodeCreator* factory(){
+        flow::PluginNodeCreator *creator = new flow::PluginNodeCreator;
 
-        BlockDvDatasetStreamer();
+        creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<BlockDvDatasetStreamer,true>>(); });
+        creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<BlockDvCornerDetector>>(); });
+        creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<BlockDvImageVisualizer>>(); });
 
-        virtual bool configure(std::unordered_map<std::string, std::string> _params) override;
-        std::vector<std::string> parameters() override;
+        return creator;
+    }
 
-    protected:
-        virtual void loopCallback() override;
-
-
-    private:
-        
-        DvStreamer *streamer_;
-
-    };
+    
 }
 
 #endif

@@ -44,12 +44,8 @@ namespace dvsal{
     private:
         bool idle_ = true;
     };
+
+    
 }
-
-// extern "C" flow::PluginNodeCreator* factory(){
-//     flow::PluginNodeCreator *creator = new flow::PluginNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<dvsal::BlockDvImageVisualizer, true>>(); });
-
-//     return creator;
-// }
 
 #endif
