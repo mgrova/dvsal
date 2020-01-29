@@ -33,7 +33,7 @@ namespace dvsal{
 
     class BlockDvImageVisualizer: public flow::Block{
     public:
-        std::string name() override {return "DV Image Visualizer";};
+        std::string name() const override {return "DV Image Visualizer";};
         std::string description() const override {return "Flow wrapper of DVS Image Visualizer";};
 
         BlockDvImageVisualizer();

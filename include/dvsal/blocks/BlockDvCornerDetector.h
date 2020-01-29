@@ -34,7 +34,7 @@ namespace dvsal{
 
     class BlockDvCornerDetector: public flow::Block{
     public:
-        std::string name() override {return "DV Corner Detector";};
+        std::string name() const override {return "DV Corner Detector";};
         std::string description() const override {return "Flow wrapper of DVS Corners Detector.\n"
                                                           "- FAST\n"
                                                           "- HARRIS\n";};

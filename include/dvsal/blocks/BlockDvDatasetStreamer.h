@@ -29,7 +29,7 @@ namespace dvsal{
 
     class BlockDvDatasetStreamer : public flow::Block{
     public:
-        std::string name() override {return "DV Dataset Streamer";};
+        std::string name() const override {return "DV Dataset Streamer";};
         std::string description() const override {return "Flow wrapper of DVS Dataset Streamer";};
 
         BlockDvDatasetStreamer();
