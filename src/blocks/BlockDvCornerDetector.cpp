@@ -29,9 +29,9 @@ namespace dvsal{
 
         initVisualization();
 
-        createPipe("Corners events", "v_events");
+        createPipe("Corners events", "v_event");
         
-        createPolicy({{"Unfiltered events", "v_events"}});
+        createPolicy({{"Unfiltered events", "v_event"}});
         registerCallback({"Unfiltered events"}, 
                                 [&](flow::DataFlow _data){
                                     if(idle_){

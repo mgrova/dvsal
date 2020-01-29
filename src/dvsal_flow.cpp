@@ -19,54 +19,9 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#include "dvsal/blocks/BlockDvDatasetStreamer.h"
+#include <flow/DataFlow.h>
+#include <dvsal/dvsal_flow.h>
 
-namespace dvsal{
-    BlockDvDatasetStreamer::BlockDvDatasetStreamer(){
-        streamer_ = DvStreamer::create(DvStreamer::eModel::dataset);
-        
-        createPipe("events", "v_event");
-        createPipe("events-size", "int");
-    }
+FLOW_TYPE_REGISTER(v_event, dv::EventStore)
+FLOW_TYPE_REGISTER(event, dv::Event)
 
-    bool BlockDvDatasetStreamer::configure(std::unordered_map<std::string, std::string> _params){
-        if(isRunningLoop()) // Cant configure if already running.
-            return false;   
-
-        std::string datasetPath = _params["dataset_path"];
-
-        if(!streamer_->init(datasetPath.c_str()))
-            return false;
- 
-        return true;
-    }
-
-    std::vector<std::string> BlockDvDatasetStreamer::parameters(){
-        return {
-            "dataset_path" 
-        };
-    }
-
-
-    void BlockDvDatasetStreamer::loopCallback() {
-        while(isRunningLoop()){
-
-            streamer_->step();
-
-            if(getPipe("events")->registrations() !=0 ){
-                dv::EventStore rawEvents;
-                streamer_->events(rawEvents);
-                getPipe("events")->flush(rawEvents);     
-            }
-
-            if(getPipe("events-size")->registrations() !=0 ){
-                dv::EventStore store;
-                streamer_->events(store);
-                std::cout <<static_cast<int>(store.size()) <<std::endl;
-                getPipe("events-size")->flush(static_cast<int>(store.size()));
-            }    
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
-    }
-
-}
