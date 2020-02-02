@@ -37,14 +37,16 @@ namespace dvsal{
         virtual bool configure(std::unordered_map<std::string, std::string> _params) override;
         std::vector<std::string> parameters() override;
 
+        virtual QWidget * customWidget() override;
+
     protected:
         virtual void loopCallback() override;
 
 
     private:
-        
         DvStreamer *streamer_;
 
+        float eventBatch_ = 1000; // events batch output size
     };
 }
 

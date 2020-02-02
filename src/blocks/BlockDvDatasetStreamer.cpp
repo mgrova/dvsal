@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------------------------
 //  DVSAL
 //---------------------------------------------------------------------------------------------------------------------
 //  Copyright 2019 - Marco Montes Grova (a.k.a. marrcogrova) 
@@ -20,6 +20,11 @@
 //---------------------------------------------------------------------------------------------------------------------
 
 #include "dvsal/blocks/BlockDvDatasetStreamer.h"
+
+#include <QSpinBox>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QLabel>
 
 namespace dvsal{
     BlockDvDatasetStreamer::BlockDvDatasetStreamer(){
@@ -47,6 +52,26 @@ namespace dvsal{
         };
     }
 
+    QWidget * BlockDvDatasetStreamer::customWidget(){
+        QGroupBox *box = new QGroupBox;
+        QHBoxLayout *layout = new QHBoxLayout;
+        box->setLayout(layout);
+        QLabel *label = new QLabel("events batch size");
+        layout->addWidget(label);
+
+        QSpinBox *rateController = new QSpinBox;
+        rateController->setMinimum(1);
+        rateController->setMaximum(100000);
+        rateController->setValue(int(eventBatch_));
+        layout->addWidget(rateController);
+
+        QWidget::connect(rateController, QOverload<int>::of(&QSpinBox::valueChanged), [this](int _val){
+            eventBatch_ = _val;
+        });
+
+        return box;
+    }
+
 
     void BlockDvDatasetStreamer::loopCallback() {
         while(isRunningLoop()){
@@ -56,7 +81,11 @@ namespace dvsal{
             if(getPipe("events")->registrations() !=0 ){
                 dv::EventStore rawEvents;
                 streamer_->events(rawEvents);
-                getPipe("events")->flush(rawEvents);     
+                // 666 dont know if use number of events of increment time. 
+                if (rawEvents.size() > eventBatch_){
+                    dv::EventStore outputEvents = rawEvents.slice(-eventBatch_);
+                    getPipe("events")->flush(outputEvents);     
+                }
             }
 
             if(getPipe("events-size")->registrations() !=0 ){
