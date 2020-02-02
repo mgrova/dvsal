@@ -29,6 +29,15 @@
 #include <dv-sdk/config.hpp>
 #include <dv-sdk/utils.h>
 
+#include <vtkJPEGReader.h>
+#include <vtkImageData.h>
+#include <vtkImageMapper.h> // Note: this is a 2D mapper (cf. vtkImageActor which is 3D)
+#include <vtkActor2D.h>
+#include <vtkRenderer.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderWindowInteractor.h>
+#include <vtkSmartPointer.h>
+
 namespace dvsal{
 
     class BlockDvImageVisualizer: public flow::Block{
@@ -39,10 +48,16 @@ namespace dvsal{
         BlockDvImageVisualizer();
         
     private:
+        vtkSmartPointer<vtkImageData> convertCVMatToVtkImageData(const cv::Mat &sourceCVImage, bool flipOverXAxis);
         cv::Mat convertEventsToCVMat(dv::EventStore _events);      
 
     private:
         bool idle_ = true;
+
+        vtkSmartPointer<vtkImageMapper> mapper_;
+        vtkSmartPointer<vtkActor2D> image_;
+        vtkSmartPointer<vtkRenderer> renderer_;
+        vtkSmartPointer<vtkRenderWindow> window_;
     };
 
     
