@@ -19,7 +19,7 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#include "dvsal/blocks/BlockDvCornerDetector.h"
+#include "dvsal/flow/BlockDvCornerDetector.h"
 
 namespace dvsal{
 

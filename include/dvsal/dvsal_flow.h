@@ -24,9 +24,9 @@
 
 #include <flow/flow.h>
 
-#include "dvsal/blocks/BlockDvImageVisualizer.h"
-#include "dvsal/blocks/BlockDvCornerDetector.h"
-#include "dvsal/blocks/BlockDvDatasetStreamer.h"
+#include "dvsal/flow/BlockDvImageVisualizer.h"
+#include "dvsal/flow/BlockDvCornerDetector.h"
+#include "dvsal/flow/BlockDvDatasetStreamer.h"
 
 namespace dvsal{
 

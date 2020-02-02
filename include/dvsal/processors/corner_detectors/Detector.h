@@ -31,6 +31,7 @@
 #include <QVBoxLayout>
 #include <QLineEdit>
 
+#include <iostream>
 namespace dvsal{
 
   class Detector{

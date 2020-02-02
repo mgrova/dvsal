@@ -19,7 +19,7 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#include "dvsal/blocks/BlockDvDatasetStreamer.h"
+#include "dvsal/flow/BlockDvDatasetStreamer.h"
 
 #include <QSpinBox>
 #include <QGroupBox>
