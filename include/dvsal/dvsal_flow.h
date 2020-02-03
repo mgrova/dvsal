@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------------------------------------------------
 //  DVSAL
 //---------------------------------------------------------------------------------------------------------------------
-//  Copyright 2019 - Marco Montes Grova (a.k.a. marrcogrova) 
+//  Copyright 2020 - Marco Montes Grova (a.k.a. mgrova) marrcogrova@gmail.com 
 //---------------------------------------------------------------------------------------------------------------------
 //  Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
 //  and associated documentation files (the "Software"), to deal in the Software without restriction, 
@@ -33,9 +33,9 @@ namespace dvsal{
     extern "C" flow::PluginNodeCreator* factory(){
         flow::PluginNodeCreator *creator = new flow::PluginNodeCreator;
 
-        creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<BlockDvDatasetStreamer,true>>(); });
-        creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<BlockDvCornerDetector>>(); });
-        creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<BlockDvImageVisualizer>>(); });
+        creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<BlockDvDatasetStreamer,true>>(); }, "DVS");
+        creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<BlockDvCornerDetector>>();       }, "DVS");
+        creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<BlockDvImageVisualizer>>();      }, "DVS");
 
         return creator;
     }
