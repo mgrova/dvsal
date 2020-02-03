@@ -20,41 +20,41 @@
 //---------------------------------------------------------------------------------------------------------------------
 
 #include "dvsal/streamers/DvStreamer.h" 
+#include "dvsal/processors/corner_detectors/FastDetector.h" 
+
 #include "thread"
 
 bool run = true;
 dvsal::DvStreamer *streamer = nullptr;
+dvsal::Detector   *detector = nullptr;
 
 int main(int _argc, char **_argv){
 
     streamer = dvsal::DvStreamer::create(dvsal::DvStreamer::eModel::dataset);
+    
+    detector = new dvsal::FastDetector();
 
-    std::string datasetPath = "/home/grvc/Downloads/shapes_translation/events.txt";
+    std::string datasetPath = "/home/marrcogrova/Downloads/shapes_rotation/events.txt";
     if (!streamer->init(datasetPath)){
         std::cout << "Error creating streamer" << std::endl;
         return 0;
     }
 
-    std::thread t([](){
-        while (run){
-            // std::cout << "thread function to visualize image \n";
-            
-            cv::Mat img = cv::Mat::zeros(cv::Size(240,180), CV_8UC3);
-            streamer->image(img);
-            
-            cv::imshow("events",img);
-            cv::waitKey(1);
-
-            std::this_thread::sleep_for( std::chrono::milliseconds(30) );
-        }
-    });
-    
     while(run){
         run = streamer->step();
-        
-        // std::this_thread::sleep_for( std::chrono::milliseconds(1) );
+
+        dv::EventStore UnfiltEvents;
+        streamer->events(UnfiltEvents);
+
+        if (UnfiltEvents.size() > 1000){
+            dv::EventStore ev = UnfiltEvents.slice(-1000);
+            detector->eventCallback(ev);
+
+            dv::EventStore corners = detector->cornersDetected();
+            std::cout << corners.size() << std::endl;
+        }
+        std::this_thread::sleep_for( std::chrono::milliseconds(1) );
     }
-    t.join();
 
     std::cout << "finished program" << std::endl;
 
