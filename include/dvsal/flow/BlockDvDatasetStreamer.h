@@ -46,7 +46,8 @@ namespace dvsal{
     private:
         DvStreamer *streamer_;
 
-        float eventBatch_ = 1000; // events batch output size
+        int eventRate_ = 200; // events batch output size
+        int64_t lastHighest_ = 0;
     };
 }
 

@@ -56,17 +56,17 @@ namespace dvsal{
         QGroupBox *box = new QGroupBox;
         QHBoxLayout *layout = new QHBoxLayout;
         box->setLayout(layout);
-        QLabel *label = new QLabel("events batch size");
+        QLabel *label = new QLabel("events Hz");
         layout->addWidget(label);
 
         QSpinBox *rateController = new QSpinBox;
         rateController->setMinimum(1);
         rateController->setMaximum(100000);
-        rateController->setValue(int(eventBatch_));
+        rateController->setValue(int(eventRate_));
         layout->addWidget(rateController);
 
         QWidget::connect(rateController, QOverload<int>::of(&QSpinBox::valueChanged), [this](int _val){
-            eventBatch_ = _val;
+            eventRate_ = _val;
         });
 
         return box;
@@ -78,13 +78,21 @@ namespace dvsal{
 
             streamer_->step();
 
-            if(getPipe("events")->registrations() !=0 ){
-                dv::EventStore rawEvents;
-                streamer_->events(rawEvents);
-                // 666 dont know if use number of events of increment time. 
-                if (rawEvents.size() > eventBatch_){
-                    dv::EventStore outputEvents = rawEvents.slice(-eventBatch_);
-                    getPipe("events")->flush(outputEvents);     
+            dv::EventStore rawEvents;
+            streamer_->events(rawEvents);
+            
+            // 666 must be better way to make it
+            int64_t microsec = 1/(eventRate_*0.000001);
+            if (rawEvents.getHighestTime() > microsec + lastHighest_){
+                streamer_->cutUsingTime(lastHighest_);
+                
+                dv::EventStore outputEvents;
+                streamer_->events(outputEvents);
+                
+                lastHighest_ = outputEvents.getHighestTime();
+                
+                if(getPipe("events")->registrations() !=0 ){
+                    getPipe("events")->flush(outputEvents);    
                 }
             }
 

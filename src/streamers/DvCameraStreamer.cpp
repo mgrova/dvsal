@@ -43,7 +43,13 @@ namespace dvsal{
 
 
         return false;
-    }    
+    }   
+
+    bool DvCameraStreamer::cutUsingTime(int _microseconds){
+
+        return false;
+    }
+
 
 
 }

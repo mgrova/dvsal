@@ -36,6 +36,8 @@ namespace dvsal{
 		bool events(dv::EventStore &_events);
         bool image(cv::Mat &_image); // Fake image using events
         bool step();
+        bool cutUsingTime(int _microseconds);
+
 
     private:
         std::ifstream datasetFile_;

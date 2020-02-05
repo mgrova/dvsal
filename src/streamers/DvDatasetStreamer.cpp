@@ -64,6 +64,13 @@ namespace dvsal{
         return true;
     } 
 
+    bool DvDatasetStreamer::cutUsingTime(int _microseconds){
+        
+        events_ = events_.sliceTime(_microseconds);
+        return true;
+    }
+
+
     bool DvDatasetStreamer::image(cv::Mat &_image){
 
         dv::EventStore eventsLast30000microseconds = events_.sliceTime(-10000); //666   

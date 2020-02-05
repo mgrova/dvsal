@@ -46,6 +46,8 @@ namespace dvsal{
       
       virtual bool events(dv::EventStore &_events) = 0;
       virtual bool image(cv::Mat &_image) = 0; // Fake image using events
+      virtual bool cutUsingTime(int _microseconds) = 0;
+
     };
 
     
