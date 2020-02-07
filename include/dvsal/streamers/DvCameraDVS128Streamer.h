@@ -22,12 +22,17 @@
 #ifndef DV_CAMERA_STREAMER_H_
 #define DV_CAMERA_STREAMER_H_
 
+// #define LIBCAER_FRAMECPP_OPENCV_INSTALLED 0
+#include <libcaercpp/devices/dvs128.hpp>
+
+#include <atomic>
+#include <csignal>
 
 #include "dvsal/streamers/DvStreamer.h"
 
 namespace dvsal{
 
-    class DvCameraStreamer : public DvStreamer{
+    class DvCameraDVS128Streamer : public DvStreamer{
     public:
 		bool init(const std::string &_string);
 		bool events(dv::EventStore &_events);
@@ -35,8 +40,10 @@ namespace dvsal{
         bool step();
         bool cutUsingTime(int _microseconds);
     private:
-
-        
+        static void usbShutdownHandler(void *_ptr);
+    private:
+        libcaer::devices::dvs128 *dvs128Handle_ = nullptr;        
+        static std::atomic<bool> globalShutdown_= false ;
     };
 
     

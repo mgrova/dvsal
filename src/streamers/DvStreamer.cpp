@@ -22,7 +22,7 @@
 
 #include "dvsal/streamers/DvStreamer.h"
 #include "dvsal/streamers/DvDatasetStreamer.h"
-#include "dvsal/streamers/DvCameraStreamer.h"
+#include "dvsal/streamers/DvCameraDVS128Streamer.h"
 
 namespace dvsal{
 
@@ -30,7 +30,7 @@ namespace dvsal{
 		if (_type == eModel::dataset) {
 			return new DvDatasetStreamer();
 		}else if (_type == eModel::dvs128) {
-			return new DvCameraStreamer();
+			return new DvCameraDVS128Streamer();
         }else {
             std::cerr << "[DV-STREAMER]  unknown model type" << std::endl;
 			return nullptr;
@@ -41,7 +41,7 @@ namespace dvsal{
 		if (_type == "dataset") {
 			return new DvDatasetStreamer();
 		}else if (_type == "dvs128") {
-			return new DvCameraStreamer();
+			return new DvCameraDVS128Streamer();
         }else {
             std::cerr << "[DV-STREAMER]  unknown model type" << std::endl;
 			return nullptr;
