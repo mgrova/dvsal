@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------------------------------------------------
 //  DVSAL
 //---------------------------------------------------------------------------------------------------------------------
-//  Copyright 2019 - Marco Montes Grova (a.k.a. marrcogrova) 
+//  Copyright 2020 - Marco Montes Grova (a.k.a. mgrova) marrcogrova@gmail.com 
 //---------------------------------------------------------------------------------------------------------------------
 //  Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
 //  and associated documentation files (the "Software"), to deal in the Software without restriction, 
@@ -19,54 +19,38 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#include "dvsal/blocks/BlockDvDatasetStreamer.h"
+#ifndef DV_CAMERA_DVS128_STREAMER_H_
+#define DV_CAMERA_DVS128_STREAMER_H_
+
+// #define LIBCAER_FRAMECPP_OPENCV_INSTALLED 0
+#include <libcaercpp/devices/dvs128.hpp>
+
+#include <atomic>
+#include <csignal>
+
+#include "dvsal/streamers/DvStreamer.h"
 
 namespace dvsal{
-    BlockDvDatasetStreamer::BlockDvDatasetStreamer(){
-        streamer_ = DvStreamer::create(DvStreamer::eModel::dataset);
-        
-        createPipe("events", "v_events");
-        createPipe("events-size", "int");
-    }
 
-    bool BlockDvDatasetStreamer::configure(std::unordered_map<std::string, std::string> _params){
-        if(isRunningLoop()) // Cant configure if already running.
-            return false;   
+    class DvCameraDVS128Streamer : public DvStreamer{
+    public:
+		bool init(const std::string &_string);
+		bool events(dv::EventStore &_events);
+        bool image(cv::Mat &_image); // Fake image using events
+        bool step();
+        bool cutUsingTime(int _microseconds);
+    private:
+        static void usbShutdownHandler(void *_ptr) ;
+    private:
+        libcaer::devices::dvs128 *dvs128Handle_ = nullptr;        
+        constexpr static std::atomic<bool> globalShutdown_{false};
 
-        std::string datasetPath = _params["dataset_path"];
+        dv::EventStore events_;
+    };
 
-        if(!streamer_->init(datasetPath.c_str()))
-            return false;
- 
-        return true;
-    }
+    
 
-    std::vector<std::string> BlockDvDatasetStreamer::parameters(){
-        return {
-            "dataset_path" 
-        };
-    }
-
-
-    void BlockDvDatasetStreamer::loopCallback() {
-        while(isRunningLoop()){
-
-            streamer_->step();
-
-            if(getPipe("events")->registrations() !=0 ){
-                dv::EventStore rawEvents;
-                streamer_->events(rawEvents);
-                getPipe("events")->flush(rawEvents);     
-            }
-
-            if(getPipe("events-size")->registrations() !=0 ){
-                dv::EventStore store;
-                streamer_->events(store);
-                std::cout <<static_cast<int>(store.size()) <<std::endl;
-                getPipe("events-size")->flush(static_cast<int>(store.size()));
-            }    
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
-    }
-
+    
 }
+
+#endif

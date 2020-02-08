@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------------------------------------------------
 //  DVSAL
 //---------------------------------------------------------------------------------------------------------------------
-//  Copyright 2019 - Marco Montes Grova (a.k.a. marrcogrova) 
+//  Copyright 2020 - Marco Montes Grova (a.k.a. mgrova) marrcogrova@gmail.com 
 //---------------------------------------------------------------------------------------------------------------------
 //  Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
 //  and associated documentation files (the "Software"), to deal in the Software without restriction, 
@@ -19,7 +19,7 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#include "dvsal/blocks/BlockDvCornerDetector.h"
+#include "dvsal/flow/BlockDvCornerDetector.h"
 
 namespace dvsal{
 
@@ -29,9 +29,9 @@ namespace dvsal{
 
         initVisualization();
 
-        createPipe("Corners events", "v_events");
+        createPipe("Corners events", "v_event");
         
-        createPolicy({{"Unfiltered events", "v_events"}});
+        createPolicy({{"Unfiltered events", "v_event"}});
         registerCallback({"Unfiltered events"}, 
                                 [&](flow::DataFlow _data){
                                     if(idle_){

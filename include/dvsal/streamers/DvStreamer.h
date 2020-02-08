@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------------------------------------------------
 //  DVSAL
 //---------------------------------------------------------------------------------------------------------------------
-//  Copyright 2019 - Marco Montes Grova (a.k.a. marrcogrova) 
+//  Copyright 2020 - Marco Montes Grova (a.k.a. mgrova) marrcogrova@gmail.com 
 //---------------------------------------------------------------------------------------------------------------------
 //  Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
 //  and associated documentation files (the "Software"), to deal in the Software without restriction, 
@@ -46,6 +46,8 @@ namespace dvsal{
       
       virtual bool events(dv::EventStore &_events) = 0;
       virtual bool image(cv::Mat &_image) = 0; // Fake image using events
+      virtual bool cutUsingTime(int _microseconds) = 0;
+
     };
 
     

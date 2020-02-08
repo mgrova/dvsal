@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------------------------------------------------
 //  DVSAL
 //---------------------------------------------------------------------------------------------------------------------
-//  Copyright 2019 - Marco Montes Grova (a.k.a. marrcogrova) 
+//  Copyright 2020 - Marco Montes Grova (a.k.a. mgrova) marrcogrova@gmail.com 
 //---------------------------------------------------------------------------------------------------------------------
 //  Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
 //  and associated documentation files (the "Software"), to deal in the Software without restriction, 
@@ -19,40 +19,48 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#include "dvsal/blocks/BlockDvImageVisualizer.h"
+#ifndef BLOCK_DV_IMAGE_VISUALIZER_H_
+#define BLOCK_DV_IMAGE_VISUALIZER_H_
+
+#include <flow/flow.h>
+#include <opencv2/opencv.hpp>
+
+#include <dv-sdk/processing.hpp>
+#include <dv-sdk/config.hpp>
+#include <dv-sdk/utils.h>
+
+#include <vtkJPEGReader.h>
+#include <vtkImageData.h>
+#include <vtkImageMapper.h> // Note: this is a 2D mapper (cf. vtkImageActor which is 3D)
+#include <vtkActor2D.h>
+#include <vtkRenderer.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderWindowInteractor.h>
+#include <vtkSmartPointer.h>
 
 namespace dvsal{
 
-    BlockDvImageVisualizer::BlockDvImageVisualizer(){
-        createPolicy({{"DVS Events","v_event"}});
+    class BlockDvImageVisualizer: public flow::Block{
+    public:
+        std::string name() const override {return "DV Image Visualizer";};
+        std::string description() const override {return "Flow wrapper of DVS Image Visualizer";};
 
-        registerCallback({"DVS Events"}, 
-                            [&](flow::DataFlow _data){
-                                if(idle_){
-                                    idle_ = false;  
-                                        
-                                    dv::EventStore events = _data.get<dv::EventStore>("DVS Events");
-                                    cv::Mat fakeImage = convertEventsToCVMat(events);
- 
-                                    cv::imshow("events",fakeImage);
-                                    cv::waitKey(1);
+        BlockDvImageVisualizer();
+        
+    private:
+        vtkSmartPointer<vtkImageData> convertCVMatToVtkImageData(const cv::Mat &sourceCVImage, bool flipOverXAxis);
+        cv::Mat convertEventsToCVMat(dv::EventStore _events);      
 
-                                    idle_ = true;
-                                }
+    private:
+        bool idle_ = true;
 
-                            }
-                        );
-    }
+        vtkSmartPointer<vtkImageMapper> mapper_;
+        vtkSmartPointer<vtkActor2D> image_;
+        vtkSmartPointer<vtkRenderer> renderer_;
+        vtkSmartPointer<vtkRenderWindow> window_;
+    };
 
-    cv::Mat BlockDvImageVisualizer::convertEventsToCVMat(dv::EventStore _events){
-            cv::Mat image = cv::Mat::zeros(cv::Size(240,180), CV_8UC3);
-            for (const auto &event : _events) {
-                if (event.polarity())
-                    image.at<cv::Vec3b>(event.y(), event.x()) = cv::Vec3b(0,0,255);
-                else
-                    image.at<cv::Vec3b>(event.y(), event.x()) = cv::Vec3b(0,255,0);
-            }
-
-            return image;
-        };        
+    
 }
+
+#endif

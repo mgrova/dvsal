@@ -1,7 +1,7 @@
 ##---------------------------------------------------------------------------------------------------------------------
 ##  DVSAL
 ##---------------------------------------------------------------------------------------------------------------------
-##  Copyright 2019 - Marco Montes Grova (a.k.a. marrcogrova) 
+##  Copyright 2020 - Marco Montes Grova (a.k.a. mgrova) marrcogrova@gmail.com 
 ##---------------------------------------------------------------------------------------------------------------------
 ##  Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
 ##  and associated documentation files (the "Software"), to deal in the Software without restriction, 
@@ -86,6 +86,13 @@ if (${flow_FOUND})
   target_compile_definitions(${PROJECT_NAME} PUBLIC HAS_FLOW)
 endif(${flow_FOUND})
 
+find_package(PCL QUIET REQUIRED)
+if(${PCL_FOUND})
+  target_include_directories(${PROJECT_NAME} PUBLIC ${PCL_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME} LINK_PRIVATE ${PCL_LIBRARIES})
+  target_compile_definitions(${PROJECT_NAME} PUBLIC "ENABLE_PCL" "DISABLE_PCAP" "DISABLE_PNG" "DISABLE_LIBUSB_1_0")
+endif()
+
 #########################################
 ######			EXAMPLES        		   ######
 #########################################
@@ -146,3 +153,8 @@ if(NOT TARGET uninstall)
  
   add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake) 
 endif() 
+
+# FLOW INSTALL target 
+add_custom_target(flow_install
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/lib${PROJECT_NAME}.so $ENV{HOME}/.flow/plugins/lib${PROJECT_NAME}.so
+)

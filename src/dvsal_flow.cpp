@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------------------------------------------------
 //  DVSAL
 //---------------------------------------------------------------------------------------------------------------------
-//  Copyright 2019 - Marco Montes Grova (a.k.a. marrcogrova) 
+//  Copyright 2020 - Marco Montes Grova (a.k.a. mgrova) marrcogrova@gmail.com 
 //---------------------------------------------------------------------------------------------------------------------
 //  Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
 //  and associated documentation files (the "Software"), to deal in the Software without restriction, 
@@ -19,52 +19,9 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#ifndef BLOCK_DV_CORNERDETECTOR_H_
-#define BLOCK_DV_CORNERDETECTOR_H_
+#include <flow/DataFlow.h>
+#include <dvsal/dvsal_flow.h>
 
-#include <flow/flow.h>
+FLOW_TYPE_REGISTER(v_event, dv::EventStore)
+FLOW_TYPE_REGISTER(event, dv::Event)
 
-#include <dvsal/processors/corner_detectors/Detector.h>
-#include <dvsal/processors/corner_detectors/HarrisDetector.h>
-#include <dvsal/processors/corner_detectors/FastDetector.h>
-
-#include <mutex>
-
-namespace dvsal{
-
-    class BlockDvCornerDetector: public flow::Block{
-    public:
-        std::string name() override {return "DV Corner Detector";};
-        std::string description() const override {return "Flow wrapper of DVS Corners Detector.\n"
-                                                          "- FAST\n"
-                                                          "- HARRIS\n";};
-
-        BlockDvCornerDetector();
-
-        virtual QWidget * customWidget(){
-            return visualContainer_;
-        }
-
-        
-    private:
-        void initVisualization();
-
-        std::vector<Detector *> detectorList();
-
-        void changeDetector(int _index);
-
-    private:
-        bool idle_ = true;
-
-        std::mutex detectorGuard_;
-        std::vector<Detector *> detectorList_;
-        Detector* currentDetector_;
-        
-        QComboBox *detectorSelector_ = nullptr;
-        QGroupBox *visualContainer_ = nullptr;
-        QVBoxLayout *mainLayout_ = nullptr;
-    };
-}
-
-
-#endif

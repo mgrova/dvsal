@@ -37,8 +37,8 @@ namespace dvsal{
     detectorName_ = "FAST";
 
     // allocate SAE matrices
-    sae_[0] = Eigen::MatrixXd::Zero(sensorHeight_, sensorWidth_);
-    sae_[1] = Eigen::MatrixXd::Zero(sensorHeight_, sensorWidth_);
+    sae_[0] = Eigen::MatrixXd::Zero(sensorWidth_ , sensorHeight_);
+    sae_[1] = Eigen::MatrixXd::Zero(sensorWidth_ , sensorHeight_);
   }
 
   FastDetector::~FastDetector(){

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------------------------------------------------
 //  DVSAL
 //---------------------------------------------------------------------------------------------------------------------
-//  Copyright 2019 - Marco Montes Grova (a.k.a. marrcogrova) 
+//  Copyright 2020 - Marco Montes Grova (a.k.a. mgrova) marrcogrova@gmail.com 
 //---------------------------------------------------------------------------------------------------------------------
 //  Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
 //  and associated documentation files (the "Software"), to deal in the Software without restriction, 
@@ -19,31 +19,36 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
+#ifndef BLOCK_DV_DATASET_STREAMER_H_
+#define BLOCK_DV_DATASET_STREAMER_H_
 
-#include "dvsal/streamers/DvCameraStreamer.h"
+#include <flow/flow.h>
+#include "dvsal/streamers/DvStreamer.h"
 
 namespace dvsal{
 
-    bool DvCameraStreamer::init(const std::string &_string){
+    class BlockDvDatasetStreamer : public flow::Block{
+    public:
+        std::string name() const override {return "DV Dataset Streamer";};
+        std::string description() const override {return "Flow wrapper of DVS Dataset Streamer";};
 
-        return false;
-    }
+        BlockDvDatasetStreamer();
 
-    bool DvCameraStreamer::step(){
+        virtual bool configure(std::unordered_map<std::string, std::string> _params) override;
+        std::vector<std::string> parameters() override;
 
-        return false;
-    }
+        virtual QWidget * customWidget() override;
 
-    bool DvCameraStreamer::events(dv::EventStore &_events){
-
-        return false;
-    }    
-
-    bool DvCameraStreamer::image(cv::Mat &_image){
+    protected:
+        virtual void loopCallback() override;
 
 
-        return false;
-    }    
+    private:
+        DvStreamer *streamer_;
 
-
+        int eventRate_ = 200; // events batch output size
+        int64_t lastHighest_ = 0;
+    };
 }
+
+#endif
