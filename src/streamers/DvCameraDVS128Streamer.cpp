@@ -61,13 +61,51 @@ namespace dvsal{
     }
 
     bool DvCameraDVS128Streamer::step(){
+        if (!globalShutdown_.load(std::memory_order_relaxed)) {
+		    std::unique_ptr<libcaer::events::EventPacketContainer> packetContainer = dvs128Handle_->dataGet();
+		    if (packetContainer == nullptr) {
+		    	// continue; // Skip if nothing there.
+		    }
+            printf("\nGot event container with %d packets (allocated).\n", packetContainer->size());
+
+		    for (auto &packet : *packetContainer) {
+			    if (packet == nullptr) {
+				    printf("Packet is empty (not present).\n");
+				    continue; // Skip if nothing there.
+			    }
+
+			    printf("Packet of type %d -> %d events, %d capacity.\n", packet->getEventType(), packet->getEventNumber(),
+				    packet->getEventCapacity());
+
+			    if (packet->getEventType() == POLARITY_EVENT) {
+				    std::shared_ptr<const libcaer::events::PolarityEventPacket> polarity
+				    	= std::static_pointer_cast<libcaer::events::PolarityEventPacket>(packet);
+
+				    // Get full timestamp and addresses of first event.
+				    const libcaer::events::PolarityEvent &firstEvent = (*polarity)[0];
+
+			    	int32_t ts = firstEvent.getTimestamp();
+			    	uint16_t x = firstEvent.getX();
+			    	uint16_t y = firstEvent.getY();
+			    	bool pol   = firstEvent.getPolarity();
+
+			    	printf("First polarity event - ts: %d, x: %d, y: %d, pol: %d.\n", ts, x, y, pol);
+
+                    dv::Event event(static_cast<int64_t>(ts) , static_cast<int16_t>(x) , static_cast<int16_t>(y) , static_cast<uint8_t>(pol));
+        
+                    events_.add(event);
+			    }
+		    }
+        }
+
 
         return false;
     }
 
     bool DvCameraDVS128Streamer::events(dv::EventStore &_events){
+        _events = events_;
 
-        return false;
+        return true;
     }    
 
     bool DvCameraDVS128Streamer::image(cv::Mat &_image){
@@ -78,14 +116,15 @@ namespace dvsal{
 
     bool DvCameraDVS128Streamer::cutUsingTime(int _microseconds){
 
-        return false;
+        events_ = events_.sliceTime(_microseconds);
+        return true;
     }
 
     void DvCameraDVS128Streamer::usbShutdownHandler(void *_ptr){
         (void) (_ptr); // UNUSED.
 
+        // 666
 	    // globalShutdown_.store(true);
-
         return;
     }
 

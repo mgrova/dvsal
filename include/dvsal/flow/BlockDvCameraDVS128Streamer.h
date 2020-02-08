@@ -19,38 +19,36 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#ifndef DV_CAMERA_DVS128_STREAMER_H_
-#define DV_CAMERA_DVS128_STREAMER_H_
+#ifndef BLOCK_DV_CAMERA_DVS128_STREAMER_H_
+#define BLOCK_DV_CAMERA_DVS128_STREAMER_H_
 
-// #define LIBCAER_FRAMECPP_OPENCV_INSTALLED 0
-#include <libcaercpp/devices/dvs128.hpp>
-
-#include <atomic>
-#include <csignal>
-
+#include <flow/flow.h>
 #include "dvsal/streamers/DvStreamer.h"
 
 namespace dvsal{
 
-    class DvCameraDVS128Streamer : public DvStreamer{
+    class BlockDvCameraDVS128Streamer : public flow::Block{
     public:
-		bool init(const std::string &_string);
-		bool events(dv::EventStore &_events);
-        bool image(cv::Mat &_image); // Fake image using events
-        bool step();
-        bool cutUsingTime(int _microseconds);
-    private:
-        static void usbShutdownHandler(void *_ptr) ;
-    private:
-        libcaer::devices::dvs128 *dvs128Handle_ = nullptr;        
-        constexpr static std::atomic<bool> globalShutdown_{false};
+        std::string name() const override {return "DV DVS128 Streamer";};
+        std::string description() const override {return "Flow wrapper of Camera DVS128";};
 
-        dv::EventStore events_;
+        BlockDvCameraDVS128Streamer();
+
+        virtual bool configure(std::unordered_map<std::string, std::string> _params) override;
+        std::vector<std::string> parameters() override;
+
+        virtual QWidget * customWidget() override;
+
+    protected:
+        virtual void loopCallback() override;
+
+
+    private:
+        DvStreamer *streamer_;
+
+        int eventRate_ = 200; // events batch output size
+        int64_t lastHighest_ = 0;
     };
-
-    
-
-    
 }
 
 #endif
