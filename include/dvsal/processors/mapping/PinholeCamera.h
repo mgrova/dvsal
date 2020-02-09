@@ -25,21 +25,10 @@
 #include <opencv2/core/core.hpp>
 #include <Eigen/Dense>
 
-namespace geometry_utils {
-
-  using Transformation = Eigen::Matrix4f;
-  using Quaternion = Eigen::Quaternionf;
+namespace dvsal {
 
   typedef float Depth;
   typedef float InverseDepth;
-  typedef Eigen::Vector3d BearingVector;
-  typedef Eigen::Vector2d Keypoint; // subpixel pixel coordinate
-  typedef Eigen::Vector3d Point;
-  typedef Eigen::Vector2d MotionVector;
-  typedef Eigen::Vector2d GradientVector;
-  typedef Eigen::Vector3d LinearVelocity;
-  typedef Eigen::Vector3d AngularVelocity;
-
 
   class PinholeCamera{
   public:
@@ -57,13 +46,27 @@ namespace geometry_utils {
       Kinv_ = K_.inverse();
     }
 
-    inline Keypoint project3dToPixel(const Point& P){
+    inline Eigen::Vector2d project3dToPixel(const Eigen::Vector3d& P){
       // CHECK_GE(std::fabs(P[2]), 1e-6);
-      return Keypoint(fx_*P[0]/P[2] + cx_, fy_*P[1]/P[2] + cy_);
+      return Eigen::Vector2d(fx_*P[0]/P[2] + cx_, fy_*P[1]/P[2] + cy_);
     }
 
-    inline BearingVector projectPixelTo3dRay(const Keypoint& u){
-      return BearingVector((u[0]-cx_)/fx_, (u[1]-cy_)/fy_, 1.0);
+    inline Eigen::Vector3d projectPixelTo3dRay(const Eigen::Vector2d & u){
+      return Eigen::Vector3d((u[0]-cx_)/fx_, (u[1]-cy_)/fy_, 1.0);
+    }
+
+    inline Eigen::Vector2f rectifyPoint(Eigen::Vector2f _distorPoint){
+      Eigen::Vector2f undistortedPoint;
+      // 666
+
+      return undistortedPoint;
+    }
+
+    inline Eigen::Vector2f rectifyPoint(Eigen::Vector2f _distorPoint, cv::Mat _K , cv::Mat _D){
+      Eigen::Vector2f undistortedPoint;
+      // 666
+
+      return undistortedPoint;
     }
 
     Eigen::Matrix3f K() const{

@@ -25,8 +25,6 @@
 
 namespace EMVS {
 
-using namespace geometry_utils;
-
 MapperEMVS::MapperEMVS(const std::vector<float>& _camParams, const ShapeDSI& _dsiShape){
   dsiShape_ = _dsiShape;
 
@@ -69,8 +67,8 @@ bool MapperEMVS::evaluateDSI(const std::vector<dv::Event>& events,
     // 666
     float frame_ts = events[current_event_ + packet_size_ / 2].timestamp() * 0.000001;
 
-    Transformation T_w_ev; // from event camera to world
-    Transformation T_rv_ev; // from event camera to reference viewpoint
+    Eigen::Matrix4f T_w_ev; // from event camera to world
+    Eigen::Matrix4f T_rv_ev; // from event camera to reference viewpoint
     if(!trajectory.getPoseAt(frame_ts, T_w_ev))
     {
       current_event_++;
@@ -79,7 +77,7 @@ bool MapperEMVS::evaluateDSI(const std::vector<dv::Event>& events,
 
     T_rv_ev = T_rv_w * T_w_ev;
 
-    const Transformation T_ev_rv = T_rv_ev.inverse();
+    const Eigen::Matrix4f T_ev_rv = T_rv_ev.inverse();
     const Eigen::Matrix3f R = T_ev_rv.block<3,3>(0,0);
     const Eigen::Vector3f t = T_ev_rv.block<3,1>(0,3); 
 
@@ -95,7 +93,7 @@ bool MapperEMVS::evaluateDSI(const std::vector<dv::Event>& events,
     H_z0_inv.col(2) += t;
 
     // Compute H_z0 in pixel coordinates using the intrinsic parameters
-    Eigen::Matrix3f H_z0_inv_px = K_ * H_z0_inv * virtual_cam_.Kinv_;
+    Eigen::Matrix3f H_z0_inv_px = K_ * H_z0_inv * virtualCam_.Kinv_;
     Eigen::Matrix3f H_z0_px = H_z0_inv_px.inverse();
 
     // Use a 4x4 matrix to allow Eigen to optimize the speed
@@ -156,8 +154,8 @@ void MapperEMVS::fillVoxelGrid(const std::vector<Eigen::Vector4f>& event_locatio
       const Eigen::Vector3f& C = camera_centers[packet];
       const float zi = static_cast<float>(raw_depths_vec_[depth_plane]),
           a = z0 * (zi - C[2]),
-          bx = (z0 - zi) * (C[0] * virtual_cam_.fx_ + C[2] * virtual_cam_.cx_),
-          by = (z0 - zi) * (C[1] * virtual_cam_.fy_ + C[2] * virtual_cam_.cy_),
+          bx = (z0 - zi) * (C[0] * virtualCam_.fx_ + C[2] * virtualCam_.cx_),
+          by = (z0 - zi) * (C[1] * virtualCam_.fy_ + C[2] * virtualCam_.cy_),
           d = zi * (z0 - C[2]);
 
       // Update voxel grid now, N events per iteration
@@ -195,21 +193,21 @@ void MapperEMVS::setupDSI()
   dsiShape_.dimX_ = (dsiShape_.dimX_ > 0) ? dsiShape_.dimX_ : width_; //dvs_cam_.fullResolution().width
   dsiShape_.dimY_ = (dsiShape_.dimY_ > 0) ? dsiShape_.dimY_ : height_;
 
-  float f_virtual_cam_;
+  float f_virtualCam_;
   if (dsiShape_.fov_ < 10.f)
   {
     std::cout << __FUNCTION__ <<" - Specified DSI FoV < 10 deg. Will use camera FoV instead. \n";
-    f_virtual_cam_ = K_(0,0);
+    f_virtualCam_ = K_(0,0);
   }
   else
   {
     const float dsi_fov_rad = dsiShape_.fov_ * CV_PI / 180.0;
-    f_virtual_cam_ = 0.5 * (float) dsiShape_.dimX_ / std::tan(0.5 * dsi_fov_rad);
+    f_virtualCam_ = 0.5 * (float) dsiShape_.dimX_ / std::tan(0.5 * dsi_fov_rad);
   }
-  std::cout<< __FUNCTION__  << " - Focal length of virtual camera: " << f_virtual_cam_ << " pixels. \n";
+  std::cout<< __FUNCTION__  << " - Focal length of virtual camera: " << f_virtualCam_ << " pixels. \n";
 
-  virtual_cam_ = PinholeCamera(dsiShape_.dimX_, dsiShape_.dimY_,
-                               f_virtual_cam_, f_virtual_cam_,
+  virtualCam_ = dvsal::PinholeCamera(dsiShape_.dimX_, dsiShape_.dimY_,
+                               f_virtualCam_, f_virtualCam_,
                                0.5 * (float)dsiShape_.dimX_, 0.5 * (float)dsiShape_.dimY_);
   
   dsi_ = Grid3D(dsiShape_.dimX_, dsiShape_.dimY_, dsiShape_.dimZ_);
@@ -225,9 +223,8 @@ void MapperEMVS::precomputeRectifiedPoints()
     for(int x=0; x < width_; ++x)
     {
       // 666 add rectify point method to geometry utils
-      // cv::Point2d rectified_point = dvs_cam_.rectifyPoint(cv::Point2d(x,y));
-      cv::Point2d rectified_point;
-      precomputed_rectified_points_.col(y * width_ + x) = Eigen::Vector2f(rectified_point.x, rectified_point.y);
+      Eigen::Vector2f rectified_point = virtualCam_.rectifyPoint(Eigen::Vector2f(x,y)); //666
+      precomputed_rectified_points_.col(y * width_ + x) = rectified_point;
     }
   }
 }
@@ -319,7 +316,7 @@ void MapperEMVS::getPointcloud(const cv::Mat& depth_map,
     {
       if(mask.at<uint8_t>(y,x) > 0)
       {
-        BearingVector b_rv = virtual_cam_.projectPixelTo3dRay(Keypoint(x,y));
+        Eigen::Vector3d b_rv = virtualCam_.projectPixelTo3dRay(Eigen::Vector2d(x,y));
         b_rv.normalize();
         Eigen::Vector3d xyz_rv = (b_rv / b_rv[2] * depth_map.at<float>(y,x));
 

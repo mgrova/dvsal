@@ -23,7 +23,6 @@
 #define DVSAL_MAPPING_TRAJECTORY_H_
 
 #include <map>
-#include <dvsal/processors/mapping/GeometryUtils.h>
 #include <iostream>
 
 template<class DerivedTrajectory>

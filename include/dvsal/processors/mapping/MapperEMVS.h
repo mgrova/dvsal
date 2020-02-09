@@ -22,7 +22,7 @@
 #ifndef DVSAL_MAPPING_MAPPER_EMVS_H_
 #define DVSAL_MAPPING_MAPPER_EMVS_H_
 
-#include <dvsal/processors/mapping/GeometryUtils.h>
+#include <dvsal/processors/mapping/PinholeCamera.h>
 #include <dvsal/processors/mapping/Trajectory.h>
 #include <dvsal/processors/mapping/DepthVector.h>
 #include <dvsal/processors/mapping/Cartesian3DGrid.h>
@@ -137,7 +137,7 @@ namespace EMVS {
 
     // (Constant) parameters that define the DSI (size and intrinsics)
     ShapeDSI dsiShape_;
-    geometry_utils::PinholeCamera virtual_cam_;
+    dvsal::PinholeCamera virtualCam_;
 
     // Precomputed vector of num_depth_cells_ inverse depths,
     // uniformly sampled in inverse depth space
