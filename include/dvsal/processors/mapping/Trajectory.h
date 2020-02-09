@@ -23,14 +23,14 @@
 #define DVSAL_MAPPING_TRAJECTORY_H_
 
 #include <map>
-#include <ros/time.h>
-#include <mapper_emvs/geometry_utils.hpp>
+#include <dvsal/processors/mapping/GeometryUtils.h>
+#include <iostream>
 
 template<class DerivedTrajectory>
 class Trajectory
 {
 public:  
-  typedef std::map<ros::Time, geometry_utils::Transformation> PoseMap;
+  typedef std::map<float, Eigen::Matrix4f> PoseMap;
   
   DerivedTrajectory& derived()
   { return static_cast<DerivedTrajectory&>(*this); }
@@ -42,18 +42,18 @@ public:
   {}
 
   // Returns T_W_C (mapping points from C to the world frame W)
-  bool getPoseAt(const ros::Time& t, geometry_utils::Transformation& T) const
+  bool getPoseAt(const float& t, Eigen::Matrix4f& T) const
   {
     return derived().getPoseAt(t, T);
   }
     
-  void getFirstControlPose(geometry_utils::Transformation* T, ros::Time* t) const
+  void getFirstControlPose(Eigen::Matrix4f* T, float* t) const
   {
     *t = poses_.begin()->first;
     *T = poses_.begin()->second;
   }
 
-  void getLastControlPose(geometry_utils::Transformation* T, ros::Time* t) const
+  void getLastControlPose(Eigen::Matrix4f* T, float* t) const
   {
     *t = poses_.rbegin()->first;
     *T = poses_.rbegin()->second;
@@ -69,9 +69,9 @@ public:
     size_t control_pose_idx = 0u;
     for(auto it : poses_)
     {
-      VLOG(1) << "--Control pose #" << control_pose_idx++ << ". time = " << it.first;
-      VLOG(1) << "--T = ";
-      VLOG(1) << it.second;
+      std::cout << "--Control pose #" << control_pose_idx++ << ". time = " << it.first;
+      std::cout << "--T = ";
+      std::cout << it.second;
     }
     return true;
   }
@@ -92,28 +92,30 @@ public:
   LinearTrajectory(const PoseMap& poses)
     : Trajectory(poses)
   {
-    CHECK_GE(poses_.size(), 2u) << "At least two poses need to be provided";
+    if (poses_.size() < 2)
+      std::cout << "At least two poses need to be provided \n";
   }
 
-  bool getPoseAt(const ros::Time& t, geometry_utils::Transformation& T) const
+  bool getPoseAt(const float& t, Eigen::Matrix4f& T) const
   {
-    ros::Time t0_, t1_;
-    geometry_utils::Transformation T0_, T1_;
+    float t0_, t1_;
+    Eigen::Matrix4f T0_ = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f T1_ = Eigen::Matrix4f::Identity();
 
     // Check if it is between two known poses
     auto it1 = poses_.upper_bound(t);
     if(it1 ==  poses_.begin())
     {
-      LOG_FIRST_N(WARNING, 5) << "Cannot extrapolate in the past. Requested pose: "
+      std::cout << "Cannot extrapolate in the past. Requested pose: "
                               << t << " but the earliest pose available is at time: "
-                              << poses_.begin()->first;
+                              << poses_.begin()->first << "\n";
       return false;
     }
     else if(it1 == poses_.end())
     {
-      LOG_FIRST_N(WARNING, 5) << "Cannot extrapolate in the future. Requested pose: "
+      std::cout << "Cannot extrapolate in the future. Requested pose: "
                               << t << " but the latest pose available is at time: "
-                              << (poses_.rbegin())->first;
+                              << (poses_.rbegin())->first << "\n";
       return false;
     }
     else
@@ -125,11 +127,19 @@ public:
       T1_ = (it1)->second;
     }
 
-    // Linear interpolation in SE(3)
-    auto T_relative = T0_.inverse() * T1_;
-    auto delta_t = (t - t0_).toSec() / (t1_ - t0_).toSec();
-    T = T0_ * geometry_utils::Transformation::exp(delta_t * T_relative.log());
+    // 666 MUST implement Linear interpolation in SE(3)
+    Eigen::Matrix4f T_relative = Eigen::Matrix4f::Identity();
+    T_relative = T0_.inverse() * T1_;
+    auto delta_t = (t - t0_) / (t1_ - t0_);
+
+    // T = T0_ * Eigen::Matrix4f::exp(delta_t * T_relative.log());
+
+    std::cout << "T" << T1_ << "\n";
+
+    T = T_relative;
     return true;
   }
 
 };
+
+#endif

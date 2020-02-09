@@ -19,6 +19,10 @@
 ##  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ##---------------------------------------------------------------------------------------------------------------------
 
-add_executable(simple_example main.cpp)
-target_include_directories(simple_example PRIVATE ../include)
-target_link_libraries(simple_example LINK_PUBLIC dvsal flow)
+add_executable(detector_example detect_main.cpp)
+target_include_directories(detector_example PRIVATE ../include)
+target_link_libraries(detector_example LINK_PUBLIC dvsal flow)
+
+add_executable(mapping_example map_main.cpp)
+target_include_directories(mapping_example PRIVATE ../include)
+target_link_libraries(mapping_example LINK_PUBLIC dvsal flow)

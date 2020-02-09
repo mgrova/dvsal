@@ -22,15 +22,23 @@
 #ifndef DVSAL_MAPPING_MAPPER_EMVS_H_
 #define DVSAL_MAPPING_MAPPER_EMVS_H_
 
-#include <mapper_emvs/geometry_utils.hpp>
-#include <mapper_emvs/trajectory.hpp>
-#include <mapper_emvs/depth_vector.hpp>
+#include <dvsal/processors/mapping/GeometryUtils.h>
+#include <dvsal/processors/mapping/Trajectory.h>
+#include <dvsal/processors/mapping/DepthVector.h>
+#include <dvsal/processors/mapping/Cartesian3DGrid.h>
 
-#include <dvs_msgs/Event.h>
-#include <image_geometry/pinhole_camera_model.h>
+#include <dv-sdk/processing.hpp>
+#include <dv-sdk/config.hpp>
+#include <dv-sdk/utils.h>
 
 #include <pcl/point_types.h>
-#include <pcl_ros/point_cloud.h>
+#include <pcl/point_cloud.h>
+
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv/cv.hpp>
+
+#include <Eigen/Eigen>
 
 namespace EMVS {
 
@@ -93,11 +101,11 @@ namespace EMVS {
 
     MapperEMVS(){}
     
-    MapperEMVS(const image_geometry::PinholeCameraModel& cam, const ShapeDSI &dsi_shape);
+    MapperEMVS(const std::vector<float>& _camParams, const ShapeDSI& _dsiShape);
 
-    bool evaluateDSI(const std::vector<dvs_msgs::Event>& events,
+    bool evaluateDSI(const std::vector<dv::Event>& events,
                      const TrajectoryType& trajectory,
-                     const geometry_utils::Transformation& T_rv_w);
+                     const Eigen::Matrix4f& T_rv_w);
     
     void getDepthMapFromDSI(cv::Mat& depth_map, cv::Mat &confidence_map, cv::Mat &mask, const OptionsDepthMap &options_depth_map);
 
@@ -123,13 +131,12 @@ namespace EMVS {
     
 
     // Intrinsics of the camera
-    image_geometry::PinholeCameraModel dvs_cam_;
     Eigen::Matrix3f K_;
     int width_;
     int height_;
 
     // (Constant) parameters that define the DSI (size and intrinsics)
-    ShapeDSI dsi_shape_;
+    ShapeDSI dsiShape_;
     geometry_utils::PinholeCamera virtual_cam_;
 
     // Precomputed vector of num_depth_cells_ inverse depths,

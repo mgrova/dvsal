@@ -28,7 +28,7 @@
 namespace geometry_utils {
 
   using Transformation = Eigen::Matrix4f;
-  using Quaternion = Eigen::Quaternion;
+  using Quaternion = Eigen::Quaternionf;
 
   typedef float Depth;
   typedef float InverseDepth;

@@ -19,25 +19,23 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#include <dvsal/processors/mapping/mapper_emvs.hpp>
-#include <dvsal/processors/mapping/median_filtering.hpp>
+#include <dvsal/processors/mapping/MapperEMVS.h>
+#include <dvsal/processors/mapping/MedianFiltering.h>
 #include <pcl/filters/radius_outlier_removal.h>
 
 namespace EMVS {
 
 using namespace geometry_utils;
 
-MapperEMVS::MapperEMVS(const image_geometry::PinholeCameraModel& cam, const ShapeDSI& dsi_shape){
-  dvs_cam_   = cam;
-  dsi_shape_ = dsi_shape;
+MapperEMVS::MapperEMVS(const std::vector<float>& _camParams, const ShapeDSI& _dsiShape){
+  dsiShape_ = _dsiShape;
 
-  cv::Size full_resolution = cam.fullResolution();
-  width_ = full_resolution.width;
-  height_ = full_resolution.height;
+  width_  = static_cast<int>(_camParams[4]);
+  height_ = static_cast<int>(_camParams[5]);
 
-  K_ << dvs_cam_.fx(), 0.f, dvs_cam_.cx(),
-        0.f, dvs_cam_.fy(), dvs_cam_.cy(),
-        0.f, 0.f, 1.f;
+  K_ << _camParams[0],      0.f     , _camParams[2],
+        0.f          , _camParams[1], _camParams[3],
+        0.f          ,      0.f     ,     1.f;
 
   setupDSI();
 
@@ -45,12 +43,12 @@ MapperEMVS::MapperEMVS(const image_geometry::PinholeCameraModel& cam, const Shap
 }
 
 
-bool MapperEMVS::evaluateDSI(const std::vector<dvs_msgs::Event>& events,
+bool MapperEMVS::evaluateDSI(const std::vector<dv::Event>& events,
                              const TrajectoryType& trajectory,
-                             const geometry_utils::Transformation& T_rv_w)
+                             const Eigen::Matrix4f& T_rv_w)
 {
   if(events.size() < packet_size_){
-    std::cout << __FUNCTION__ << " - Number of events ( " << events.size() << ") < packet size (" << packet_size_ << ")";
+    std::cout << __FUNCTION__ << "- ERROR - Number of events ( " << events.size() << ") < packet size (" << packet_size_ << ")";
     return false;
   }
 
@@ -68,7 +66,8 @@ bool MapperEMVS::evaluateDSI(const std::vector<dvs_msgs::Event>& events,
   while(current_event_ + packet_size_ < events.size())
   {
     // Events in a packet are assigned the same timestamp (mid-point), for efficiency
-    ros::Time frame_ts = events[current_event_ + packet_size_ / 2].ts;
+    // 666
+    float frame_ts = events[current_event_ + packet_size_ / 2].timestamp() * 0.000001;
 
     Transformation T_w_ev; // from event camera to world
     Transformation T_rv_ev; // from event camera to reference viewpoint
@@ -81,8 +80,8 @@ bool MapperEMVS::evaluateDSI(const std::vector<dvs_msgs::Event>& events,
     T_rv_ev = T_rv_w * T_w_ev;
 
     const Transformation T_ev_rv = T_rv_ev.inverse();
-    const Eigen::Matrix3f R = T_ev_rv.getRotationMatrix().cast<float>();
-    const Eigen::Vector3f t = T_ev_rv.getPosition().cast<float>();
+    const Eigen::Matrix3f R = T_ev_rv.block<3,3>(0,0);
+    const Eigen::Vector3f t = T_ev_rv.block<3,1>(0,3); 
 
     // Optical center of the event camera in the coordinate frame of the reference view
     camera_centers.push_back(-R.transpose() * t);
@@ -108,10 +107,10 @@ bool MapperEMVS::evaluateDSI(const std::vector<dvs_msgs::Event>& events,
     // For each packet, precompute the warped event locations according to Eq. (11) in the IJCV paper.
     for (size_t i=0; i < packet_size_; ++i)
     {
-      const dvs_msgs::Event& e = events[current_event_++];
+      const dv::Event& e = events[current_event_++];
       Eigen::Vector4f p;
 
-      p.head<2>() = precomputed_rectified_points_.col(e.y * width_ + e.x);
+      p.head<2>() = precomputed_rectified_points_.col(e.y() * width_ + e.x());
       p[2] = 1.;
       p[3] = 0.;
 
@@ -187,33 +186,33 @@ void MapperEMVS::fillVoxelGrid(const std::vector<Eigen::Vector4f>& event_locatio
 
 void MapperEMVS::setupDSI()
 {
-  // CHECK_GT(dsi_shape_.min_depth_, 0.0);
-  // CHECK_GT(dsi_shape_.max_depth_ , dsi_shape_.min_depth_);
+  // CHECK_GT(dsiShape_.min_depth_, 0.0);
+  // CHECK_GT(dsiShape_.max_depth_ , dsiShape_.min_depth_);
 
-  depths_vec_ = TypeDepthVector(dsi_shape_.min_depth_, dsi_shape_.max_depth_, dsi_shape_.dimZ_);
+  depths_vec_ = TypeDepthVector(dsiShape_.min_depth_, dsiShape_.max_depth_, dsiShape_.dimZ_);
   raw_depths_vec_ = depths_vec_.getDepthVector();
 
-  dsi_shape_.dimX_ = (dsi_shape_.dimX_ > 0) ? dsi_shape_.dimX_ : dvs_cam_.fullResolution().width;
-  dsi_shape_.dimY_ = (dsi_shape_.dimY_ > 0) ? dsi_shape_.dimY_ : dvs_cam_.fullResolution().height;
+  dsiShape_.dimX_ = (dsiShape_.dimX_ > 0) ? dsiShape_.dimX_ : width_; //dvs_cam_.fullResolution().width
+  dsiShape_.dimY_ = (dsiShape_.dimY_ > 0) ? dsiShape_.dimY_ : height_;
 
   float f_virtual_cam_;
-  if (dsi_shape_.fov_ < 10.f)
+  if (dsiShape_.fov_ < 10.f)
   {
-    LOG(INFO) << "Specified DSI FoV < 10 deg. Will use camera FoV instead.";
-    f_virtual_cam_ = dvs_cam_.fx();
+    std::cout << __FUNCTION__ <<" - Specified DSI FoV < 10 deg. Will use camera FoV instead. \n";
+    f_virtual_cam_ = K_(0,0);
   }
   else
   {
-    const float dsi_fov_rad = dsi_shape_.fov_ * CV_PI / 180.0;
-    f_virtual_cam_ = 0.5 * (float) dsi_shape_.dimX_ / std::tan(0.5 * dsi_fov_rad);
+    const float dsi_fov_rad = dsiShape_.fov_ * CV_PI / 180.0;
+    f_virtual_cam_ = 0.5 * (float) dsiShape_.dimX_ / std::tan(0.5 * dsi_fov_rad);
   }
-  LOG(INFO) << "Focal length of virtual camera: " << f_virtual_cam_ << " pixels";
+  std::cout<< __FUNCTION__  << " - Focal length of virtual camera: " << f_virtual_cam_ << " pixels. \n";
 
-  virtual_cam_ = PinholeCamera(dsi_shape_.dimX_, dsi_shape_.dimY_,
+  virtual_cam_ = PinholeCamera(dsiShape_.dimX_, dsiShape_.dimY_,
                                f_virtual_cam_, f_virtual_cam_,
-                               0.5 * (float)dsi_shape_.dimX_, 0.5 * (float)dsi_shape_.dimY_);
+                               0.5 * (float)dsiShape_.dimX_, 0.5 * (float)dsiShape_.dimY_);
   
-  dsi_ = Grid3D(dsi_shape_.dimX_, dsi_shape_.dimY_, dsi_shape_.dimZ_);
+  dsi_ = Grid3D(dsiShape_.dimX_, dsiShape_.dimY_, dsiShape_.dimZ_);
 }
 
 
@@ -225,7 +224,9 @@ void MapperEMVS::precomputeRectifiedPoints()
   {
     for(int x=0; x < width_; ++x)
     {
-      cv::Point2d rectified_point = dvs_cam_.rectifyPoint(cv::Point2d(x,y));
+      // 666 add rectify point method to geometry utils
+      // cv::Point2d rectified_point = dvs_cam_.rectifyPoint(cv::Point2d(x,y));
+      cv::Point2d rectified_point;
       precomputed_rectified_points_.col(y * width_ + x) = Eigen::Vector2f(rectified_point.x, rectified_point.y);
     }
   }
@@ -306,8 +307,9 @@ void MapperEMVS::getPointcloud(const cv::Mat& depth_map,
                                 PointCloud::Ptr &pc_
                               )
 {
-  CHECK_EQ(depth_map.rows, mask.rows);
-  CHECK_EQ(depth_map.cols, mask.cols);
+  if ( !(depth_map.rows == mask.rows) || !(depth_map.cols == mask.cols)){
+    return;
+  }
   
   // Convert depth map to point cloud
   pc_->clear();

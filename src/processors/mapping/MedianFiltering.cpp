@@ -19,7 +19,7 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#include <mapper_emvs/median_filtering.hpp>
+#include <dvsal/processors/mapping/MedianFiltering.h>
 
 #define FORWARD     1
 #define BACKWARD  (-1)

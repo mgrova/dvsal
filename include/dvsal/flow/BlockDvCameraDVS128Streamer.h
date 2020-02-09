@@ -25,6 +25,7 @@
 #include <flow/flow.h>
 #include "dvsal/streamers/DvStreamer.h"
 
+
 namespace dvsal{
 
     class BlockDvCameraDVS128Streamer : public flow::Block{
