@@ -102,7 +102,6 @@ namespace dvsal{
                 std::cout <<static_cast<int>(store.size()) <<std::endl;
                 getPipe("events-size")->flush(static_cast<int>(store.size()));
             }    
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
     }
 
