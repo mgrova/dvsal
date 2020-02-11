@@ -222,8 +222,7 @@ void MapperEMVS::precomputeRectifiedPoints()
   {
     for(int x=0; x < width_; ++x)
     {
-      // 666 add rectify point method to geometry utils
-      Eigen::Vector2f rectified_point = virtualCam_.rectifyPoint(Eigen::Vector2f(x,y)); //666
+      Eigen::Vector2f rectified_point = virtualCam_.rectifyPoint(Eigen::Vector2f(x,y) ); //666
       precomputed_rectified_points_.col(y * width_ + x) = rectified_point;
     }
   }

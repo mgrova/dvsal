@@ -22,8 +22,11 @@
 #ifndef DVSAL_MAPPING_GEOMETRY_UTILS_H_
 #define DVSAL_MAPPING_GEOMETRY_UTILS_H_
 
+#include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core/core.hpp>
-#include <Eigen/Dense>
+#include <opencv/cv.hpp>
+
+#include <Eigen/Eigen>
 
 namespace dvsal {
 
@@ -43,6 +46,8 @@ namespace dvsal {
             0.f        , (float) fy_  , (float) cy_,
             0.f        , 0.f          ,  1.f;
 
+      cvK_ = cv::Mat(K_.rows(), K_.cols(), CV_32FC1, K_.data());
+
       Kinv_ = K_.inverse();
     }
 
@@ -56,16 +61,22 @@ namespace dvsal {
     }
 
     inline Eigen::Vector2f rectifyPoint(Eigen::Vector2f _distorPoint){
-      Eigen::Vector2f undistortedPoint;
       // 666
+      std::vector<cv::Point2f> undistortedCvPoint;
+      std::vector<cv::Point2f> cvPoints = {{_distorPoint[0],_distorPoint[1]}};
+      cv::undistortPoints(cvPoints, undistortedCvPoint,cvK_, D_);
 
+      Eigen::Vector2f undistortedPoint(undistortedCvPoint[0].x , undistortedCvPoint[0].y);
       return undistortedPoint;
     }
 
     inline Eigen::Vector2f rectifyPoint(Eigen::Vector2f _distorPoint, cv::Mat _K , cv::Mat _D){
-      Eigen::Vector2f undistortedPoint;
       // 666
+      std::vector<cv::Point2f> undistortedCvPoint;
+      std::vector<cv::Point2f> cvPoints = {{_distorPoint[0],_distorPoint[1]}};
+      cv::undistortPoints(cvPoints, undistortedCvPoint,_K, _D);
 
+      Eigen::Vector2f undistortedPoint(undistortedCvPoint[0].x , undistortedCvPoint[0].y);
       return undistortedPoint;
     }
 
@@ -81,6 +92,8 @@ namespace dvsal {
     float cy_;
     Eigen::Matrix3f K_;
     Eigen::Matrix3f Kinv_;
+    cv::Mat cvK_;
+    cv::Mat D_ = (cv::Mat_<float>(5,1) << -0.1385927674081299, 0.09337366641919795, -0.0003355869875320301, 0.0001737201582276446, 0.0);
   };
 
 }
