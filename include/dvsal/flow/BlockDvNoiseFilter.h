@@ -34,13 +34,16 @@ namespace dvsal{
 
     class BlockDvNoiseFilter : public flow::Block{
     public:
-        std::string name() const override {return "DV noise filter";};
-        std::string description() const override {return "Flow wrapper of DVS noise filter";};
+        std::string name() const override {return "DV Noise Filter";};
+        std::string description() const override {return "Flow wrapper of DVS Noise Filter";};
         
         BlockDvNoiseFilter();
 
     private:
         bool filterEvents(dv::EventStore _events, dv::EventStore &_filteredEvents);
+                 
+        caerPolarityEventPacket eventStoreToCAER(dv::EventStore _sortEvStore);
+        dv::EventStore CAERToEventStore(caerPolarityEventPacket _pPolPack,u_int32_t _packetSize);
         
     private:
         bool idle_ = true;

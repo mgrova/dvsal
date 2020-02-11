@@ -27,6 +27,7 @@
 #include "dvsal/flow/BlockDvImageVisualizer.h"
 #include "dvsal/flow/BlockDvCornerDetector.h"
 #include "dvsal/flow/BlockDvDatasetStreamer.h"
+#include "dvsal/flow/BlockDvNoiseFilter.h"
 
 namespace dvsal{
 
@@ -36,6 +37,7 @@ namespace dvsal{
         creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<BlockDvDatasetStreamer,true>>(); }, "DVS");
         creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<BlockDvCornerDetector>>();       }, "DVS");
         creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<BlockDvImageVisualizer>>();      }, "DVS");
+        creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<BlockDvNoiseFilter>>();          }, "DVS");
 
         return creator;
     }

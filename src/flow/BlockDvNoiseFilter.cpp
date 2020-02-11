@@ -34,11 +34,13 @@ namespace dvsal{
                                 [&](flow::DataFlow _data){
                                     if(idle_){
                                         idle_ = false;
-                                        auto UnfiltEvents = _data.get<dv::EventStore>("Unfiltered events");;
-
+                                        auto UnfiltEvents = _data.get<dv::EventStore>("Unfiltered events");
+                                        
                                         dv::EventStore filtered;
                                         if(filterEvents(UnfiltEvents , filtered)){
-                                            getPipe("Corners events")->flush(filtered);
+                                            std::cout << __FUNCTION__ << " - Size before filtering: " << UnfiltEvents.size() <<
+                                                                            " size after: " << filtered.size() << std::endl; 
+                                            getPipe("filtered events")->flush(filtered);
                                         }
                                         idle_ = true;
                                     }
@@ -47,19 +49,48 @@ namespace dvsal{
     }
 
     bool BlockDvNoiseFilter::filterEvents(dv::EventStore _events, dv::EventStore &_filteredEvents){
-        // Convert dv::EventStore to libcaer::events::PolarityEventPacket or caerPolarityEventPacket
-        caerPolarityEventPacket caerEvents;
 
-
+        caerPolarityEventPacket caerEvents = eventStoreToCAER(_events);
         dvsNoiseFilter_->apply(caerEvents);
-        // Convert caer to dv::EventStore
-        // _filteredEvents = ;
+        _filteredEvents = CAERToEventStore(caerEvents,caerEvents->packetHeader.eventNumber); // 666
 
         if (_filteredEvents.size() < 5){
+            std::cout << "Error filtering noise \n";
             return false;
         }
 
         return true;
     }
+
+    caerPolarityEventPacket BlockDvNoiseFilter::eventStoreToCAER(dv::EventStore _sortEvStore){
+        caerPolarityEventPacket pPolPack;
+        pPolPack =  caerPolarityEventPacketAllocate(_sortEvStore.size(),0,0);
+        
+        u_int32_t index = 0;
+        for (auto event : _sortEvStore){
+            caerPolarityEventSetPolarity(&pPolPack->events[index]  , event.polarity());
+            caerPolarityEventSetTimestamp(&pPolPack->events[index] , event.timestamp());
+            caerPolarityEventSetX(&pPolPack->events[index]         , event.x());
+            caerPolarityEventSetY(&pPolPack->events[index]         , event.y());
+            caerPolarityEventValidate(&pPolPack->events[index]     , pPolPack);
+
+            index++;
+        }
+
+        return pPolPack;
+    }
+
+    dv::EventStore BlockDvNoiseFilter::CAERToEventStore(caerPolarityEventPacket _pPolPack,u_int32_t _packetSize){
+        dv::EventStore dvEvents;
+        for(u_int32_t i=0;i<_packetSize;i++){
+
+            dv::Event tmpEv(caerPolarityEventGetTimestamp(&_pPolPack->events[i]) , 
+                            caerPolarityEventGetX(&_pPolPack->events[i]) , caerPolarityEventGetY(&_pPolPack->events[i]) , 
+                            caerPolarityEventGetPolarity(&_pPolPack->events[i]));
+            dvEvents.add(tmpEv);
+        }
+        return dvEvents;
+    }
+        
 
 }
