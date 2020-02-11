@@ -123,7 +123,7 @@ namespace dvsal{
     void DvCameraDVS128Streamer::usbShutdownHandler(void *_ptr){
         (void) (_ptr); // UNUSED.
 
-        // 666
+        // 666 IMPORTANT
 	    // globalShutdown_.store(true);
         return;
     }
