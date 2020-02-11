@@ -25,7 +25,7 @@ namespace dvsal{
 
     BlockDvNoiseFilter::BlockDvNoiseFilter(){
 
-        dvsNoiseFilter_ = new libcaer::filters::DVSNoise(240,180); // 666
+        dvsNoiseFilter_ = new libcaer::filters::DVSNoise(240,240); // 666
 
         createPipe("filtered events", "v_event");
         
@@ -38,8 +38,6 @@ namespace dvsal{
                                         
                                         dv::EventStore filtered;
                                         if(filterEvents(UnfiltEvents , filtered)){
-                                            std::cout << __FUNCTION__ << " - Size before filtering: " << UnfiltEvents.size() <<
-                                                                            " size after: " << filtered.size() << std::endl; 
                                             getPipe("filtered events")->flush(filtered);
                                         }
                                         idle_ = true;
@@ -48,13 +46,49 @@ namespace dvsal{
         );
     }
 
+    std::vector<std::string> BlockDvNoiseFilter::parameters(){
+        return {
+            "enable_two_levels" , "enable_check_pol" , "support_min" , "support_max" , "time_window"
+        };
+    }
+
+    bool BlockDvNoiseFilter::configure(std::unordered_map<std::string, std::string> _params){
+        if(isRunningLoop()) // Cant configure if already running.
+            return false;   
+
+        std::string level  = _params["enable_two_levels"];
+        twoLevels_ = (level == "true") ? true : false;
+        std::string checkPol = _params["enable_check_pol"];
+        checkPol_ = (checkPol == "true") ? true : false;
+        supportMin_ = std::stoi(_params["support_min"]);
+        supportMax_ = std::stoi(_params["support_max"]);
+        actTime_    = std::stoi(_params["time_window"]);
+
+
+        dvsNoiseFilter_->configSet(CAER_FILTER_DVS_BACKGROUND_ACTIVITY_TWO_LEVELS, twoLevels_);
+	    dvsNoiseFilter_->configSet(CAER_FILTER_DVS_BACKGROUND_ACTIVITY_CHECK_POLARITY, checkPol_);
+	    dvsNoiseFilter_->configSet(CAER_FILTER_DVS_BACKGROUND_ACTIVITY_SUPPORT_MIN, supportMin_);
+	    dvsNoiseFilter_->configSet(CAER_FILTER_DVS_BACKGROUND_ACTIVITY_SUPPORT_MAX, supportMax_);
+	    dvsNoiseFilter_->configSet(CAER_FILTER_DVS_BACKGROUND_ACTIVITY_TIME, actTime_);
+	    dvsNoiseFilter_->configSet(CAER_FILTER_DVS_BACKGROUND_ACTIVITY_ENABLE, true);
+
+	    dvsNoiseFilter_->configSet(CAER_FILTER_DVS_REFRACTORY_PERIOD_TIME, 200);
+	    dvsNoiseFilter_->configSet(CAER_FILTER_DVS_REFRACTORY_PERIOD_ENABLE, true);
+
+	    dvsNoiseFilter_->configSet(CAER_FILTER_DVS_HOTPIXEL_ENABLE, true);
+	    dvsNoiseFilter_->configSet(CAER_FILTER_DVS_HOTPIXEL_LEARN, true);
+
+        return true;
+    }
+
+    
+
     bool BlockDvNoiseFilter::filterEvents(dv::EventStore _events, dv::EventStore &_filteredEvents){
 
         caerPolarityEventPacket caerEvents = eventStoreToCAER(_events);
         dvsNoiseFilter_->apply(caerEvents);
         _filteredEvents = CAERToEventStore(caerEvents,caerEvents->packetHeader.eventNumber); // 666
-
-        if (_filteredEvents.size() < 5){
+        if (_filteredEvents.size() == _events.size()){
             std::cout << "Error filtering noise \n";
             return false;
         }
