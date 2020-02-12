@@ -39,6 +39,9 @@ namespace dvsal{
         
         BlockDvNoiseFilter();
 
+        virtual bool configure(std::unordered_map<std::string, std::string> _params) override;
+        std::vector<std::string> parameters() override;
+
     private:
         bool filterEvents(dv::EventStore _events, dv::EventStore &_filteredEvents);
                  
@@ -49,6 +52,12 @@ namespace dvsal{
         bool idle_ = true;
 
         libcaer::filters::DVSNoise *dvsNoiseFilter_ = nullptr;
+
+        bool twoLevels_ = true;
+        bool checkPol_  = true;
+        int supportMin_ = 2;
+        int supportMax_ = 8;
+        int actTime_    = 2000;
     };
 }
 
