@@ -19,31 +19,36 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#ifndef DVSAL_FLOW_H_
-#define DVSAL_FLOW_H_
+#ifndef BLOCK_DV_CLOUD_FROM_EVENTS_H_
+#define BLOCK_DV_CLOUD_FROM_EVENTS_H_
 
 #include <flow/flow.h>
 
-#include "dvsal/flow/BlockDvImageVisualizer.h"
-#include "dvsal/flow/BlockDvCornerDetector.h"
-#include "dvsal/flow/BlockDvDatasetStreamer.h"
-#include "dvsal/flow/BlockDvNoiseFilter.h"
-#include "dvsal/flow/BlockCloudFromEvents.h"
+#include <dv-sdk/processing.hpp>
+#include <dv-sdk/config.hpp>
+#include <dv-sdk/utils.h>
+
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 
 namespace dvsal{
 
-    extern "C" flow::PluginNodeCreator* factory(){
-        flow::PluginNodeCreator *creator = new flow::PluginNodeCreator;
+    class BlockCloudFromEvents : public flow::Block{
+    public:
 
-        creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<BlockDvDatasetStreamer,true>>(); }, "DVS");
-        creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<BlockDvCornerDetector>>();       }, "DVS");
-        creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<BlockDvImageVisualizer>>();      }, "DVS");
-        creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<BlockCloudFromEvents>>();        }, "DVS");
+        std::string name() const override {return "DV events to cloud conversor";};
+        std::string description() const override {return "Flow wrapper of conversor";};
+        
+        BlockCloudFromEvents();
 
-        return creator;
-    }
 
-    
+    private:
+        bool obtainPointCloudFromEvents(dv::EventStore _events , pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr &_cloud);  
+
+    private:
+        bool idle_ = true;
+
+    };
 }
 
 #endif
