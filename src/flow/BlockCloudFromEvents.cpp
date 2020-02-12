@@ -54,11 +54,17 @@ namespace dvsal{
         }
 
         // 666 set Z as first ev timestamp - actual event
+        bool firstSaved = false;
+        int64_t firstTimestamp = 0;
         for (const dv::Event &ev : _events){
+            if (!firstSaved){
+                firstTimestamp = ev.timestamp();
+                firstSaved  = true;
+            }
             pcl::PointXYZRGBNormal pt;
             pt.x = static_cast<float>(ev.x());
             pt.y = static_cast<float>(ev.y());
-            pt.z = static_cast<float>(ev.timestamp() * 0.000001);
+            pt.z = static_cast<float>((ev.timestamp() - firstTimestamp) * 0.001);
             
             pt.b = 0;
             if (ev.polarity()){
@@ -68,6 +74,8 @@ namespace dvsal{
                 pt.g = 0;
                 pt.r = 255;
             }
+
+            std::cout << "pz " << pt.z << std::endl;
 
             _cloud->points.push_back(pt);
         }
