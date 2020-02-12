@@ -27,20 +27,20 @@ namespace dvsal{
 
     }
 
-    bool CircleTracker::isEventInCircle(eventType &in, posCircle pos){
+    bool CircleTracker::isEventInCircle(dv::Event &in, posCircle pos){
         const u_int32_t thickness=2;
-        double r_min=(RADIUS-thickness)*(RADIUS-thickness);
-        double r_max=(RADIUS+thickness)*(RADIUS+thickness);
-        double x_d=abs(in.posx-pos.x);
-        double y_d=abs(in.posy-pos.y);
-        double distance=(x_d*x_d)+(y_d*y_d);
+        double r_min    = (circleRadius_-thickness) * (circleRadius_-thickness);
+        double r_max    = (circleRadius_+thickness) * (circleRadius_+thickness);
+        double x_d      = abs(in.x() - pos.x);
+        double y_d      = abs(in.y() - pos.y);
+        double distance = (x_d*x_d) + (y_d*y_d);
         if(distance < r_min || distance > r_max)
                 return false;
         return true;
     }
 
     void CircleTracker::increaseHoughPoint(u_int32_t x, u_int32_t y, float weight,u_int32_t& maxX, u_int32_t& maxY,u_int32_t& maxValue, u_int32_t** accumulatorArray) {
-        if ((x < 0) || (x >(SIZEX - 1)) || (y < 0) || (y > (SIZEY - 1))) {
+        if ((x < 0) || (x >(camSizeX_ - 1)) || (y < 0) || (y > (camSizeY_ - 1))) {
             return;
         }
 
@@ -57,13 +57,13 @@ namespace dvsal{
     }
 
 
-    void CircleTracker::accumulate(eventType event, float weight, u_int32_t& maxX, u_int32_t& maxY,u_int32_t& maxValue, u_int32_t** accumulatorArray){
+    void CircleTracker::accumulate(dv::Event event, float weight, u_int32_t& maxX, u_int32_t& maxY,u_int32_t& maxValue, u_int32_t** accumulatorArray){
 
         // TODO: this is a little overhead here, since we only draw circles in
         // Hough space (not ellipses)
-        int centerX = (int)event.posx;
-        int centerY = (int)event.posy;
-        int aa	  = round(RADIUS*RADIUS);
+        int centerX = (int)event.x();
+        int centerY = (int)event.y();
+        int aa	  = round(circleRadius_*circleRadius_);
         int bb	  = aa;
         int twoC	= 0;
 
@@ -220,31 +220,28 @@ namespace dvsal{
         }
     }
 
-    void CircleTracker::houghCircle(std::vector<eventType> in,u_int32_t& maxX,u_int32_t& maxY, bool writeToFile){
+    void CircleTracker::houghCircle(dv::EventStore in,u_int32_t& maxX,u_int32_t& maxY, bool writeToFile){
         u_int32_t maxValue=0;
         u_int32_t**accumulatorArray;
-        accumulatorArray = new u_int32_t *[SIZEX];
-        for(int i = 0; i <SIZEX; i++)
-            accumulatorArray[i] = new u_int32_t[SIZEY];
+        accumulatorArray = new u_int32_t *[camSizeX_];
+        for(int i = 0; i <camSizeX_; i++)
+            accumulatorArray[i] = new u_int32_t[camSizeY_];
 
-
-
-        for(int i=0;i<SIZEX;i++){
-            for(int j=0;j<SIZEY;j++){
+        for(int i=0;i<camSizeX_;i++){
+            for(int j=0;j<camSizeY_;j++){
                 accumulatorArray[i][j]=0;
             }
         }
-        for (u_int32_t vIdx=0; vIdx<in.size(); vIdx++)
-        {
-            accumulate(in[vIdx],1, maxX,maxY,maxValue, accumulatorArray);
+        for (auto ev : in){
+            accumulate(ev,1, maxX,maxY,maxValue, accumulatorArray);
         }
 
         // write hough to file
         if(writeToFile){
             std::ofstream myfile1;
-            myfile1.open ("hough.csv");
-            for(int i=0;i<SIZEY;i++){
-                for(int j=0;j<SIZEX;j++){
+            myfile1.open("hough.csv");
+            for(int i=0;i<camSizeY_;i++){
+                for(int j=0;j<camSizeX_;j++){
                     myfile1<<accumulatorArray[j][i]<<";";
                 }
                 myfile1<<"\n";
@@ -253,99 +250,79 @@ namespace dvsal{
         }
     }
 
-    std::vector<eventType> CircleTracker::getVectorFromEventPacket(caerPolarityEventPacket pPolPack,u_int32_t packetSize){
-        eventType tmp;
-        std::vector<eventType> vecEv;
+    dv::EventStore CircleTracker::getVectorFromEventPacket(caerPolarityEventPacket pPolPack,u_int32_t packetSize){
+        dv::EventStore dvEvents;
         for(u_int32_t i=0;i<packetSize;i++){
-            tmp.posx=caerPolarityEventGetX(&pPolPack->events[i]);
-            tmp.posy=caerPolarityEventGetY(&pPolPack->events[i]);
-            tmp.timestamp=caerPolarityEventGetTimestamp(&pPolPack->events[i]);
-            tmp.onoff=caerPolarityEventGetPolarity(&pPolPack->events[i]);
-            vecEv.push_back(tmp);
+
+            dv::Event tmpEv(caerPolarityEventGetTimestamp(&pPolPack->events[i]) , 
+                            caerPolarityEventGetX(&pPolPack->events[i]) , caerPolarityEventGetY(&pPolPack->events[i]) , 
+                            caerPolarityEventGetPolarity(&pPolPack->events[i]));
+            dvEvents.add(tmpEv);
         }
-        return vecEv;
+        return dvEvents;
     }
 
-    const double CircleTracker::getTimeMin(std::vector<eventType> data){
-        double min=data[0].timestamp;
-        for (u_int32_t i=0;i<data.size();i++){
-            if(data[i].timestamp<min){
-                min=data[i].timestamp;
-            }
-        }
-        return min;
-    }
-
-    const double CircleTracker::getTimeMax(std::vector<eventType> data){
-        double max=data[0].timestamp;
-        for (u_int32_t i=0;i<data.size();i++){
-            if(data[i].timestamp>max){
-                max=data[i].timestamp;
-            }
-        }
-        return max;
-    }
-
-    caerPolarityEventPacket CircleTracker::generatePolarityEventPacket(std::vector<eventType> sortEvVect){
+    caerPolarityEventPacket CircleTracker::generatePolarityEventPacket(dv::EventStore sortEvVect){
         caerPolarityEventPacket pPolPack;
-        pPolPack =  caerPolarityEventPacketAllocate(
-                                                sortEvVect.size()/*int32_t eventCapacity*/,
-                                                0/*int16_t eventSource*/,
-                                                0/*int32_t tsOverflow*/);
-        for (u_int32_t vIdx=0; vIdx<sortEvVect.size(); vIdx++)
-        {
-            caerPolarityEventSetPolarity(&pPolPack->events[vIdx]/*caerPolarityEvent event*/,
-                                        sortEvVect[vIdx].onoff/*bool polarity*/);
-            caerPolarityEventSetTimestamp(&pPolPack->events[vIdx]/*caerPolarityEvent event*/,
-                    sortEvVect[vIdx].timestamp);
-            caerPolarityEventSetX(&pPolPack->events[vIdx]/*caerPolarityEvent event*/,
-                    sortEvVect[vIdx].posx);
-            caerPolarityEventSetY(&pPolPack->events[vIdx]/*caerPolarityEvent event*/,
-                    sortEvVect[vIdx].posy);
-            caerPolarityEventValidate(&pPolPack->events[vIdx],pPolPack);
+        pPolPack =  caerPolarityEventPacketAllocate(sortEvVect.size() , 0 , 0);
+        
+        u_int32_t index = 0;
+        for (auto event : sortEvVect){
+            caerPolarityEventSetPolarity(&pPolPack->events[index]  , event.polarity());
+            caerPolarityEventSetTimestamp(&pPolPack->events[index] , event.timestamp());
+            caerPolarityEventSetX(&pPolPack->events[index]         , event.x());
+            caerPolarityEventSetY(&pPolPack->events[index]         , event.y());
+            caerPolarityEventValidate(&pPolPack->events[index]     , pPolPack);
+
+            index++;
         }
+
         return pPolPack;
     }
 
-    posCircle CircleTracker::cylinderFitting(std::vector<eventType> &data, posCircle pos){
+    posCircle CircleTracker::cylinderFitting(dv::EventStore data, posCircle pos){
 
         u_int32_t k=0;
         u_int32_t n=data.size();
         if(n>1){
-            double s[n];
-            double timestamps[n];
+            std::vector<double> s;
+            std::vector<double> timestamps;
             double timestamp;
             double dx0=0,dy0=0,du0=0,dv0=0,da0=0,db0=0;
             double alpha=5e-8; //schnell 5e-8
-            u_int32_t timestampEnd=getTimeMax(data);
-            u_int32_t timestampBegin=getTimeMin(data);
-            for(u_int32_t i=0;i<n;i++){
-                timestamps[i]=((data[i].timestamp-timestampBegin)/1000.0);
-            }
+            int64_t timestampEnd = data.getHighestTime();
+            int64_t timestampBegin = data.getLowestTime();
+            for (auto ev : data)
+                timestamps.push_back((ev.timestamp()-timestampBegin)/100000.0);
+            
             double xtu=0,ytv=0;
-            eventType tmp;
+            dv::Event tmp;
             while (true) {
                 k++;
                 dx0=0,dy0=0,du0=0,dv0=0,da0=0,db0=0;
-                double radius2=RADIUS*RADIUS;
-                for (u_int32_t i=0;i<n;i++){
-                    tmp=data[i];
+                double circleRadius_2=circleRadius_*circleRadius_;
+                int i = 0;
+                for (auto ev : data){
+                    tmp=ev;
                     timestamp=timestamps[i];
-                    xtu=(tmp.posx-pos.x-timestamp*pos.u);
-                    ytv=(tmp.posy-pos.y-timestamp*pos.v);
-                    s[i]=(xtu*xtu)+(ytv*ytv)-radius2;
+                    xtu=(tmp.x()-pos.x-timestamp*pos.u);
+                    ytv=(tmp.y()-pos.y-timestamp*pos.v);
+                    s.push_back( (xtu * xtu) + (ytv * ytv) - circleRadius_2);
+                    i++;
                 }
+
                 double si2=0,sxxtu=0,syytu=0;
-                for (u_int32_t i=0;i<n;i++){
-                    tmp=data[i];
-                    timestamp=timestamps[i];
-                    si2=s[i]*2;
-                    sxxtu=si2*(tmp.posx-pos.x-timestamp*pos.u);
-                    syytu=si2*(tmp.posy-pos.y-timestamp*pos.v);
-                    dx0=dx0+sxxtu;
-                    dy0=dy0+syytu;
-                    du0=du0+sxxtu*timestamp;
-                    dv0=dv0+syytu*timestamp;
+                int ii = 0;
+                for (auto ev : data){
+                    tmp = ev;
+                    timestamp = timestamps[ii];
+                    si2   = s[ii]*2;
+                    sxxtu = si2*(tmp.x()-pos.x-timestamp*pos.u);
+                    syytu = si2*(tmp.y()-pos.y-timestamp*pos.v);
+                    dx0   = dx0+sxxtu;
+                    dy0   = dy0+syytu;
+                    du0   = du0+sxxtu*timestamp;
+                    dv0   = dv0+syytu*timestamp;
                 }
 
                 //position update
@@ -365,8 +342,8 @@ namespace dvsal{
                 }
             }
 
-            pos.x=pos.x+(timestampEnd-timestampBegin)*pos.u/1000.0;// quadratic cylinderfitting -> +((timestampEnd-timestampBegin)*(timestampEnd-timestampBegin))/2*pos.a/(1000^2);
-            pos.y=pos.y+(timestampEnd-timestampBegin)*pos.v/1000.0;// quadratic cylinderfitting -> +((timestampEnd-timestampBegin)*(timestampEnd-timestampBegin))/2*pos.b/(1000^2);
+            pos.x=pos.x+(timestampEnd-timestampBegin)*pos.u/100000.0;// quadratic cylinderfitting -> +((timestampEnd-timestampBegin)*(timestampEnd-timestampBegin))/2*pos.a/(1000^2);
+            pos.y=pos.y+(timestampEnd-timestampBegin)*pos.v/100000.0;// quadratic cylinderfitting -> +((timestampEnd-timestampBegin)*(timestampEnd-timestampBegin))/2*pos.b/(1000^2);
             pos.timestamp=timestampEnd;
         }
         return pos;

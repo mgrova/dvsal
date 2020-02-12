@@ -38,6 +38,9 @@
 #define SIZEX 240
 #define SIZEY 180
 
+#include <dv-sdk/processing.hpp>
+#include <dv-sdk/config.hpp>
+#include <dv-sdk/utils.h>
 
 namespace dvsal{
 
@@ -51,13 +54,6 @@ namespace dvsal{
     		  timestamp; // timestamp of the position
     };
 
-    struct eventType{
-    	double  timestamp; 
-    	double posx, posy;
-        bool onoff;
-    };
-
-
     class CircleTracker{
     
     public:
@@ -66,7 +62,7 @@ namespace dvsal{
         /// Sort a vector with the last position of the circle and delete the events that are out of a ring
         /// in -> event
         /// pos-> last position of circle
-        bool isEventInCircle(eventType &in, posCircle pos);
+        bool isEventInCircle(dv::Event &in, posCircle pos);
 
         /// Increase the value of the hough point in the array
         void increaseHoughPoint(u_int32_t x, u_int32_t y, float weight,u_int32_t& maxX, u_int32_t& maxY,u_int32_t& maxValue, u_int32_t** accumulatorArray);
@@ -74,39 +70,33 @@ namespace dvsal{
         /// This algorithm is copied from the jAER Project of the company Inivation and adapted for C++
         /// Fast inclined ellipse drawing algorithm; ellipse eqn: A*x^2+B*y^2+C*x*y-1 = 0
         /// the algorithm is fast because it uses just integer addition and subtraction
-        void accumulate(eventType event, float weight, u_int32_t& maxX, u_int32_t& maxY,u_int32_t& maxValue, u_int32_t** accumulatorArray);
+        void accumulate(dv::Event event, float weight, u_int32_t& maxX, u_int32_t& maxY,u_int32_t& maxValue, u_int32_t** accumulatorArray);
 
         
         /// Generate hough with a vector of events
         /// in -> vector of events to generate hough
         /// maxX -> variable to save max of in X-direction
-        void houghCircle(std::vector<eventType> in,u_int32_t& maxX,u_int32_t& maxY,bool writeToFile);
+        void houghCircle(dv::EventStore in,u_int32_t& maxX,u_int32_t& maxY,bool writeToFile);
         
         // Fitting a cylinder in a vector of events with gradient descent.
         // Optimized calculations to make algorithm fast enough.
         // data -> converted events from PolarityEventPacket to a vector -> getXYT
         // pos -> last calculated position
-        posCircle cylinderFitting(std::vector<eventType> &data, posCircle pos);
+        posCircle cylinderFitting(dv::EventStore data, posCircle pos);
         
         // Generate PolarityEventPacket from vector 
-        // sortEvVect -> Vector with events from Type eventType        
-        caerPolarityEventPacket generatePolarityEventPacket(std::vector<eventType> sortEvVect);
+        // sortEvVect -> Vector with events from Type dv::Event        
+        caerPolarityEventPacket generatePolarityEventPacket(dv::EventStore sortEvVect);
 
         /// Generate vector of events from eventPacket 
         /// pPolPack -> PolarityEventPacket from Camera or File
         /// packetSize -> size of EventPacket
-        std::vector<eventType> getVectorFromEventPacket(caerPolarityEventPacket pPolPack,u_int32_t packetSize);
-        
-        // Search for smallest timestamp in  a vector of events 
-        // data -> events as vector
-        const double getTimeMin(std::vector<eventType> data);
+        dv::EventStore getVectorFromEventPacket(caerPolarityEventPacket pPolPack,u_int32_t packetSize);
 
-        
-        // Search for biggest timestamp in a vector of events
-        // data -> events as vector
-        const double getTimeMax(std::vector<eventType> data);
-
-
+        private:
+            int camSizeX_     = 240;
+            int camSizeY_     = 180;
+            int circleRadius_ = 37;
     };
 }
 
