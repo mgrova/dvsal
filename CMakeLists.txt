@@ -69,9 +69,9 @@ if(${OpenCV_FOUND})
   target_compile_definitions(${PROJECT_NAME} PUBLIC HAS_OPENCV)
 endif()
 
-find_package(Boost REQUIRED COMPONENTS system filesystem)
+find_package(Boost REQUIRED) # COMPONENTS system filesystem)
 if (${Boost_FOUND})
-  target_link_libraries(${PROJECT_NAME} LINK_PUBLIC Boost::boost Boost::system Boost::filesystem)
+  target_link_libraries(${PROJECT_NAME} LINK_PUBLIC Boost::boost) # Boost::system Boost::filesystem)
   target_compile_definitions(${PROJECT_NAME} PUBLIC HAS_BOOST)
 endif(${Boost_FOUND})
 
@@ -80,18 +80,18 @@ if(${Eigen3_FOUND})
   target_include_directories(${PROJECT_NAME} PUBLIC "/usr/include/eigen3")
 endif()
 
-find_package(flow REQUIRED)
-if (${flow_FOUND})
-  target_link_libraries(${PROJECT_NAME} LINK_PUBLIC flow::flow)
-  target_compile_definitions(${PROJECT_NAME} PUBLIC HAS_FLOW)
-endif(${flow_FOUND})
-
 find_package(PCL QUIET REQUIRED)
 if(${PCL_FOUND})
   target_include_directories(${PROJECT_NAME} PUBLIC ${PCL_INCLUDE_DIRS})
   target_link_libraries(${PROJECT_NAME} LINK_PRIVATE ${PCL_LIBRARIES})
   target_compile_definitions(${PROJECT_NAME} PUBLIC "ENABLE_PCL" "DISABLE_PCAP" "DISABLE_PNG" "DISABLE_LIBUSB_1_0")
 endif()
+
+find_package(flow REQUIRED)
+if (${flow_FOUND})
+  target_link_libraries(${PROJECT_NAME} LINK_PUBLIC flow::flow)
+  target_compile_definitions(${PROJECT_NAME} PUBLIC HAS_FLOW)
+endif(${flow_FOUND})
 
 #########################################
 ######			EXAMPLES        		   ######
@@ -153,8 +153,3 @@ if(NOT TARGET uninstall)
  
   add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake) 
 endif() 
-
-# FLOW INSTALL target 
-add_custom_target(flow_install
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/lib${PROJECT_NAME}.so $ENV{HOME}/.flow/plugins/lib${PROJECT_NAME}.so
-)

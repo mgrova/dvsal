@@ -1,6 +1,11 @@
 get_filename_component(dvsal_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 include(CMakeFindDependencyMacro)
 
+find_dependency(libcaer)
+find_dependency(dv)
+find_dependency(Boost)
+find_dependency(VTK)
+
 if(NOT TARGET dvsal::dvsal)
     include("${dvsal_CMAKE_DIR}/dvsalTargets.cmake")
 endif()
