@@ -21,7 +21,7 @@ install_git_repo () {
 	fi
 }
 
-install_git_repo "flow" "https://github.com/mico-corp/flow"
+install_git_repo "flow" "https://github.com/mico-corp/flow.git"
 
 sudo add-apt-repository -y ppa:inivation-ppa/inivation
 sudo apt-get update
