@@ -21,6 +21,7 @@ install_git_repo () {
 	fi
 }
 
+install_git_repo "nodeeditor" "https://github.com/mico-corp/nodeeditor.git"
 install_git_repo "flow" "https://github.com/mico-corp/flow.git"
 
 sudo add-apt-repository -y ppa:inivation-ppa/inivation
