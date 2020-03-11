@@ -22,6 +22,7 @@ matrix:
             - libboost-all-dev
             - curl
             - libopencv-dev
+            - libpcl-dev
 
 
 before_install:
