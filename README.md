@@ -9,14 +9,14 @@ Dynamic Vision Sensors Abstraction Layer
 
 ### DVS Libraries
 ```
-sudo add-apt-repository ppa:inivation-ppa/inivation
+sudo add-apt-repository -y ppa:inivation-ppa/inivation
 sudo apt-get update
-sudo apt-get install dv-runtime-dev
+sudo apt-get install -y dv-runtime-dev
 ```
 
 ### OpenCV
 ```
-sudo apt-get install libopencv-dev
+sudo apt-get install -y libopencv-dev
 ```
 
 ### Boost
