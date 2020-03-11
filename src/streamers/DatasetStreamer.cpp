@@ -20,11 +20,11 @@
 //---------------------------------------------------------------------------------------------------------------------
 
 #include <boost/filesystem.hpp>
-#include "dvsal/streamers/DvDatasetStreamer.h"
+#include <dvsal/streamers/DatasetStreamer.h>
 
 namespace dvsal{
 
-    bool DvDatasetStreamer::init(const std::string &_string){
+    bool DatasetStreamer::init(const std::string &_string){
         datasetFile_ = std::ifstream(_string);
         
         if(!boost::filesystem::exists(_string)){
@@ -36,7 +36,7 @@ namespace dvsal{
     }
 
 
-    bool DvDatasetStreamer::step(){
+    bool DatasetStreamer::step(){
         
         std::string line;
         std::getline(datasetFile_, line);  
@@ -58,20 +58,20 @@ namespace dvsal{
     }
 
 
-    bool DvDatasetStreamer::events(dv::EventStore &_events){
+    bool DatasetStreamer::events(dv::EventStore &_events){
         _events = events_;
 
         return true;
     } 
 
-    bool DvDatasetStreamer::cutUsingTime(int _microseconds){
+    bool DatasetStreamer::cutUsingTime(int _microseconds){
         
         events_ = events_.sliceTime(_microseconds);
         return true;
     }
 
 
-    bool DvDatasetStreamer::image(cv::Mat &_image){
+    bool DatasetStreamer::image(cv::Mat &_image){
 
         dv::EventStore eventsLast30000microseconds = events_.sliceTime(-10000); //666   
 

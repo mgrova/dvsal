@@ -19,30 +19,35 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#ifndef DV_DATASET_STREAMER_H_
-#define DV_DATASET_STREAMER_H_
+#ifndef DVS_STREAMER_H_
+#define DVS_STREAMER_H_
 
-#include "dvsal/streamers/DvStreamer.h"
-
-#include <fstream>
-#include <sstream>
 #include <string>
+#include <iostream>
+
+#include <dv-sdk/processing.hpp>
+#include <dv-sdk/config.hpp>
+#include <dv-sdk/utils.h>
+
+#include <opencv2/opencv.hpp>
 
 namespace dvsal{
 
-    class DvDatasetStreamer : public DvStreamer{
+    class Streamer{
     public:
-		bool init(const std::string &_string);
-		bool events(dv::EventStore &_events);
-        bool image(cv::Mat &_image); // Fake image using events
-        bool step();
-        bool cutUsingTime(int _microseconds);
+      enum class eModel { dataset , dvs128 };
 
+		  static Streamer *create(eModel _type);
+		  static Streamer *create(std::string _type);
 
-    private:
-        std::ifstream datasetFile_;
+    public:
+		  virtual bool init(const std::string &_string = "") = 0;
+		  virtual bool step() = 0;
+      
+      virtual bool events(dv::EventStore &_events) = 0;
+      virtual bool image(cv::Mat &_image) = 0; // Fake image using events
+      virtual bool cutUsingTime(int _microseconds) = 0;
 
-        dv::EventStore events_;
     };
 
     

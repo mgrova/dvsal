@@ -26,8 +26,8 @@
 
 #include "dvsal/processors/corner_detectors/Detector.h"
 
-#include "dvsal/processors/corner_detectors/LocalEventQueues.h"
-#include "dvsal/processors/corner_detectors/DistinctQueue.h"
+#include "dvsal/processors/corner_detectors/utils/LocalEventQueues.h"
+#include "dvsal/processors/corner_detectors/utils/DistinctQueue.h"
 
 namespace dvsal{
 

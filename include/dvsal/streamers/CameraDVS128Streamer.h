@@ -19,38 +19,34 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#ifndef DV_STREAMER_H_
-#define DV_STREAMER_H_
+#ifndef CAMERA_DVS128_STREAMER_H_
+#define CAMERA_DVS128_STREAMER_H_
 
-#include <string>
-#include <iostream>
+// #define LIBCAER_FRAMECPP_OPENCV_INSTALLED 0
+#include <libcaercpp/devices/dvs128.hpp>
 
-#include <dv-sdk/processing.hpp>
-#include <dv-sdk/config.hpp>
-#include <dv-sdk/utils.h>
+#include <atomic>
+#include <csignal>
 
-#include <opencv2/opencv.hpp>
+#include <dvsal/streamers/Streamer.h>
 
 namespace dvsal{
 
-    class DvStreamer{
+    class CameraDVS128Streamer : public Streamer{
     public:
-      enum class eModel { dataset , dvs128 };
+		bool init(const std::string &_string);
+		bool events(dv::EventStore &_events);
+        bool image(cv::Mat &_image); // Fake image using events
+        bool step();
+        bool cutUsingTime(int _microseconds);
+    private:
+        static void usbShutdownHandler(void *_ptr) ;
+    private:
+        libcaer::devices::dvs128 *dvs128Handle_ = nullptr;        
+        constexpr static std::atomic<bool> globalShutdown_{false};
 
-		  static DvStreamer *create(eModel _type);
-		  static DvStreamer *create(std::string _type);
-
-    public:
-		  virtual bool init(const std::string &_string = "") = 0;
-		  virtual bool step() = 0;
-      
-      virtual bool events(dv::EventStore &_events) = 0;
-      virtual bool image(cv::Mat &_image) = 0; // Fake image using events
-      virtual bool cutUsingTime(int _microseconds) = 0;
-
+        dv::EventStore events_;
     };
-
-    
 }
 
 #endif

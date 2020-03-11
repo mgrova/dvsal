@@ -23,13 +23,9 @@
 #define DVSAL_PROCESSORS_CORNERDETECTORS_FAST_DETECTOR_H_
 
 #include <deque>
-
 #include <Eigen/Dense>
-
 #include "dvsal/processors/corner_detectors/Detector.h"
-
 namespace dvsal{
-
   class FastDetector : public Detector{
     public:
       FastDetector();
@@ -52,7 +48,6 @@ namespace dvsal{
       static const int sensorWidth_ = 240;
       static const int sensorHeight_ = 180;
   };
-
-} // namespace
+}
 
 #endif

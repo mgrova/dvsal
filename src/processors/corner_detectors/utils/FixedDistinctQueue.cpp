@@ -19,8 +19,7 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-
-#include "dvsal/processors/corner_detectors/FixedDistinctQueue.h"
+#include <dvsal/processors/corner_detectors/utils/FixedDistinctQueue.h>
 
 namespace dvsal{
 

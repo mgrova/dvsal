@@ -24,9 +24,6 @@
 namespace dvsal{
 
   Detector::Detector(){
-    totalCorners_ = 0;
-    totalEvents_  = 0;
-    totalTime_    = 0;
   }
 
   Detector::~Detector(){

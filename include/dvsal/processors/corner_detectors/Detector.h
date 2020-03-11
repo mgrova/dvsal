@@ -56,16 +56,9 @@ namespace dvsal{
       std::string detectorName_;
 
     private:
-
-      // statistics
-      double totalTime_;
-      int totalEvents_, totalCorners_ , numEvents_ , numFeatures_;
-      float reductionRate_, reductionFactor_ , eventsPerSecond_ , nsPerEvent_;
-
       dv::EventStore cornersDetected_;
+      
   };
-
-
-} // namespace
+}
 
 #endif

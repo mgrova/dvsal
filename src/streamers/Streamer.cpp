@@ -20,28 +20,28 @@
 //---------------------------------------------------------------------------------------------------------------------
 
 
-#include "dvsal/streamers/DvStreamer.h"
-#include "dvsal/streamers/DvDatasetStreamer.h"
-#include "dvsal/streamers/DvCameraDVS128Streamer.h"
+#include <dvsal/streamers/Streamer.h>
+#include <dvsal/streamers/DatasetStreamer.h>
+#include <dvsal/streamers/CameraDVS128Streamer.h>
 
 namespace dvsal{
 
-    DvStreamer * DvStreamer::create(eModel _type) {
+    Streamer * Streamer::create(eModel _type) {
 		if (_type == eModel::dataset) {
-			return new DvDatasetStreamer();
+			return new DatasetStreamer();
 		}else if (_type == eModel::dvs128) {
-			return new DvCameraDVS128Streamer();
+			return new CameraDVS128Streamer();
         }else {
             std::cerr << "[DV-STREAMER]  unknown model type" << std::endl;
 			return nullptr;
         }
     }
     
-    DvStreamer * DvStreamer::create(std::string _type) {
+    Streamer * Streamer::create(std::string _type) {
 		if (_type == "dataset") {
-			return new DvDatasetStreamer();
+			return new DatasetStreamer();
 		}else if (_type == "dvs128") {
-			return new DvCameraDVS128Streamer();
+			return new CameraDVS128Streamer();
         }else {
             std::cerr << "[DV-STREAMER]  unknown model type" << std::endl;
 			return nullptr;

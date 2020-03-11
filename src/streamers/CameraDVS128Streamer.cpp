@@ -19,12 +19,11 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-
-#include "dvsal/streamers/DvCameraDVS128Streamer.h"
+#include <dvsal/streamers/CameraDVS128Streamer.h>
 
 namespace dvsal{
 
-    bool DvCameraDVS128Streamer::init(const std::string &_string){
+    bool CameraDVS128Streamer::init(const std::string &_string){
         // Open a DVS128, give it a device ID of 1, and don't care about USB bus or SN restrictions.
         dvs128Handle_ = new libcaer::devices::dvs128(1, 0, 0, "");
 
@@ -60,7 +59,7 @@ namespace dvsal{
         return false;
     }
 
-    bool DvCameraDVS128Streamer::step(){
+    bool CameraDVS128Streamer::step(){
         if (!globalShutdown_.load(std::memory_order_relaxed)) {
 		    std::unique_ptr<libcaer::events::EventPacketContainer> packetContainer = dvs128Handle_->dataGet();
 		    if (packetContainer == nullptr) {
@@ -102,25 +101,25 @@ namespace dvsal{
         return false;
     }
 
-    bool DvCameraDVS128Streamer::events(dv::EventStore &_events){
+    bool CameraDVS128Streamer::events(dv::EventStore &_events){
         _events = events_;
 
         return true;
     }    
 
-    bool DvCameraDVS128Streamer::image(cv::Mat &_image){
+    bool CameraDVS128Streamer::image(cv::Mat &_image){
 
 
         return false;
     }   
 
-    bool DvCameraDVS128Streamer::cutUsingTime(int _microseconds){
+    bool CameraDVS128Streamer::cutUsingTime(int _microseconds){
 
         events_ = events_.sliceTime(_microseconds);
         return true;
     }
 
-    void DvCameraDVS128Streamer::usbShutdownHandler(void *_ptr){
+    void CameraDVS128Streamer::usbShutdownHandler(void *_ptr){
         (void) (_ptr); // UNUSED.
 
         // 666 IMPORTANT

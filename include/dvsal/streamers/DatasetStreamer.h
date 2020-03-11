@@ -19,36 +19,31 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#ifndef DV_CAMERA_DVS128_STREAMER_H_
-#define DV_CAMERA_DVS128_STREAMER_H_
+#ifndef DATASET_STREAMER_H_
+#define DATASET_STREAMER_H_
 
-// #define LIBCAER_FRAMECPP_OPENCV_INSTALLED 0
-#include <libcaercpp/devices/dvs128.hpp>
+#include <dvsal/streamers/Streamer.h>
 
-#include <atomic>
-#include <csignal>
-
-#include "dvsal/streamers/DvStreamer.h"
+#include <fstream>
+#include <sstream>
+#include <string>
 
 namespace dvsal{
 
-    class DvCameraDVS128Streamer : public DvStreamer{
+    class DatasetStreamer : public Streamer{
     public:
 		bool init(const std::string &_string);
 		bool events(dv::EventStore &_events);
         bool image(cv::Mat &_image); // Fake image using events
         bool step();
         bool cutUsingTime(int _microseconds);
+
+
     private:
-        static void usbShutdownHandler(void *_ptr) ;
-    private:
-        libcaer::devices::dvs128 *dvs128Handle_ = nullptr;        
-        constexpr static std::atomic<bool> globalShutdown_{false};
+        std::ifstream datasetFile_;
 
         dv::EventStore events_;
     };
-
-    
 
     
 }

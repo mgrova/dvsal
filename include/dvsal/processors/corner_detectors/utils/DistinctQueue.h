@@ -25,8 +25,8 @@
 #include <deque>
 #include <Eigen/Dense>
 
-#include <dvsal/processors/corner_detectors/LocalEventQueues.h>
-#include <dvsal/processors/corner_detectors/FixedDistinctQueue.h>
+#include <dvsal/processors/corner_detectors/utils/LocalEventQueues.h>
+#include <dvsal/processors/corner_detectors/utils/FixedDistinctQueue.h>
 
 namespace dvsal{
 

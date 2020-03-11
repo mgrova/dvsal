@@ -19,18 +19,18 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#include "dvsal/streamers/DvStreamer.h" 
-#include "dvsal/processors/corner_detectors/FastDetector.h" 
+#include <dvsal/streamers/Streamer.h>
+#include <dvsal/processors/corner_detectors/FastDetector.h>
 
 #include "thread"
 
 bool run = true;
-dvsal::DvStreamer *streamer = nullptr;
-dvsal::Detector   *detector = nullptr;
+dvsal::Streamer *streamer = nullptr;
+dvsal::Detector *detector = nullptr;
 
 int main(int _argc, char **_argv){
 
-    streamer = dvsal::DvStreamer::create(dvsal::DvStreamer::eModel::dataset);
+    streamer = dvsal::Streamer::create(dvsal::Streamer::eModel::dataset);
     
     detector = new dvsal::FastDetector();
 
@@ -45,13 +45,13 @@ int main(int _argc, char **_argv){
 
         dv::EventStore UnfiltEvents;
         streamer->events(UnfiltEvents);
+        std::cout << UnfiltEvents.size() << std::endl;
 
         if (UnfiltEvents.size() > 1000){
             dv::EventStore ev = UnfiltEvents.slice(-1000);
             detector->eventCallback(ev);
 
             dv::EventStore corners = detector->cornersDetected();
-            std::cout << corners.size() << std::endl;
         }
         std::this_thread::sleep_for( std::chrono::milliseconds(1) );
     }
