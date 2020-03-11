@@ -1,4 +1,9 @@
 # dvsal
+Dynamic Vision Sensors Abstraction Layer
+
+[![Releases](https://img.shields.io/github/release/mgrova/dvsal.svg)](https://github.com/mgrova/dvsal/releases)  [![Issues](https://img.shields.io/github/issues/mgrova/dvsal.svg)](https://github.com/mgrova/dvsal/issues)
+
+[![Build Status](https://travis-ci.org/mgrova/dvsal.svg?branch=master)](https://travis-ci.com/mgrova/dvsal)
 
 ## Dependencies
 

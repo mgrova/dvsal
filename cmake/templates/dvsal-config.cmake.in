@@ -7,5 +7,5 @@ find_dependency(Boost)
 find_dependency(VTK)
 
 if(NOT TARGET dvsal::dvsal)
-    include("${dvsal_CMAKE_DIR}/dvsalTargets.cmake")
+    include("${dvsal_CMAKE_DIR}/dvsal-targets.cmake")
 endif()
