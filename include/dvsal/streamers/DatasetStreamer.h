@@ -35,16 +35,15 @@ namespace dvsal{
         DatasetStreamer(const std::string _string);
 
 		bool init();
-		bool events(dv::EventStore &_events);
-        bool image(cv::Mat &_image); // Fake image using events
         bool step();
-        bool cutUsingTime(int _microseconds);
 
+        void events(dv::EventStore &_events , int _microseconds);
+        bool image(cv::Mat &_image);
 
     private:
         std::ifstream datasetFile_;
 
-        dv::EventStore events_;
+        dv::EventStore lastEvents_;
     };
 
     

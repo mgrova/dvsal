@@ -33,23 +33,22 @@
 
 namespace dvsal{
 
-    class Streamer{
-    public:
-      template<typename _Type, typename... _T>
-		  static Streamer *create( _T&&... _arg);
-      
-      virtual ~Streamer() {};
+  class Streamer{
+  public:
+    template<typename _Type, typename... _T>
+    static Streamer *create( _T&&... _arg);
+    
+    virtual ~Streamer() {};
 
-    public:
-      
-		  virtual bool init() = 0;
-      virtual bool step() = 0;
-      
-      virtual bool events(dv::EventStore &_events) = 0;
-      virtual bool image(cv::Mat &_image) = 0; // Fake image using events
-      virtual bool cutUsingTime(int _microseconds) = 0;
+  public:
+    
+    virtual bool init() = 0;
+    virtual bool step() = 0;
+    
+    virtual void events(dv::EventStore &_events , int _microseconds = 0) = 0;
+    virtual bool image(cv::Mat &_image) = 0; // Fake image using events
 
-    };    
+  };    
 }
 
 #include "Streamer.inl"

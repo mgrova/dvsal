@@ -41,6 +41,27 @@ namespace dvsal{
 			compressionZstd_ = zstdInitDecompressionContext();
 		}
 
+		int64_t startTimePos = 0;
+		int64_t endTimePos   = 0;
+
+		int64_t startTimestamp = startTimePos + inputInfo_->timeLowest_;
+		int64_t endTimestamp   = endTimePos + inputInfo_->timeHighest_;
+
+			// Now we know how much time we need to extract, from when to when.
+			// First let's see if there is even something for that time interval for
+			// each of the streams.
+		
+		cacheBuffer_.updatePacketsTimeRange(startTimestamp, endTimestamp, 0 );
+		packetsToRead_ = cacheBuffer_.getInRange();
+
+		if (packetsToRead_.empty()) {
+			// No data for this stream and time interval, skip.
+			std::cout << "Packets to read empty \n";
+		}
+
+		std::cout << "Packets to read: " << packetsToRead_.size() << std::endl;
+		iterPackets_ = packetsToRead_.begin();
+
 		return true;
 	}
 
@@ -332,98 +353,73 @@ namespace dvsal{
 	}
 
 	bool AEDAT4Streamer::step(){
-
-		std::chrono::time_point<std::chrono::steady_clock> prepareDataStart = std::chrono::steady_clock::now();
-
-		int64_t startTimePos = 0;
-		int64_t endTimePos   = 0;
-
-		int64_t startTimestamp = startTimePos + inputInfo_->timeLowest_;
-		int64_t endTimestamp   = endTimePos + inputInfo_->timeHighest_;
-
-			// Now we know how much time we need to extract, from when to when.
-			// First let's see if there is even something for that time interval for
-			// each of the streams.
 		
-		cacheBuffer_.updatePacketsTimeRange(startTimestamp, endTimestamp, 0 );
-		auto packetsToRead = cacheBuffer_.getInRange();
+		const char *dataPtr;
+		std::size_t dataSize;
+		if (iterPackets_->cached) {
+			dataPtr  = cacheBuffer_.getDataPtrCache(*iterPackets_).data();
+			dataSize = cacheBuffer_.getDataSizeCache(*iterPackets_);
+		}
+		else {
+			inputStream_->seekg(iterPackets_->packet.ByteOffset, std::ios_base::beg);
 
-		if (packetsToRead.empty()) {
-			// No data for this stream and time interval, skip.
-			std::cout << "Packets to read empty \n";
+			readBuffer_.resize(static_cast<size_t>(iterPackets_->packet.PacketInfo.Size()));
+
+			inputStream_->read(readBuffer_.data(), iterPackets_->packet.PacketInfo.Size());
+
+			dataSize = readBuffer_.size();
+			dataPtr  = readBuffer_.data();
+
+			// Decompress packet.
+			if (inputInfo_->compression_ != dv::CompressionType::NONE) {
+				decompressData(dataPtr, dataSize);
+
+				dataSize = decompressBuffer_.size();
+				dataPtr  = decompressBuffer_.data();
+			}
+			// add dataPtr and dataSize to cache
+			std::vector<char> temp(dataPtr, dataPtr + dataSize);
+			cacheBuffer_.addToCache(*iterPackets_, temp, dataSize);
 		}
 
-		for (auto iter = packetsToRead.cbegin(); iter != packetsToRead.cend(); iter++) {
-			const char *dataPtr;
-			std::size_t dataSize;
-			if (iter->cached) {
-				dataPtr  = cacheBuffer_.getDataPtrCache(*iter).data();
-				dataSize = cacheBuffer_.getDataSizeCache(*iter);
-			}
-			else {
-				inputStream_->seekg(iter->packet.ByteOffset, std::ios_base::beg);
+		// dataPtr and dataSize now contain the uncompressed, raw flatbuffer.
+		if (!flatbuffers::BufferHasIdentifier(dataPtr, "EVTS", true)) {
+			// Wrong type identifier for this flatbuffer (file_identifier field).
+			// This should never happen, ignore packet.
+			std::cout << " Flatbuffer identifier is 'EVTS' \n";
+			return false;
+		}
 
-				readBuffer_.resize(static_cast<size_t>(iter->packet.PacketInfo.Size()));
+		// Unpack event packet mode 1.
+		auto dataEventPacket = dv::GetSizePrefixedEventPacket(dataPtr);
+		auto eventPacket     = std::unique_ptr<dv::EventPacket>(dataEventPacket->UnPack());
 
-				inputStream_->read(readBuffer_.data(), iter->packet.PacketInfo.Size());
+		// Unpack event packet mode 2.
+		// auto fbPtr          = flatbuffers::GetSizePrefixedRoot<void>(dataPtr);
+		// auto eventsPacketFb = reinterpret_cast<const dv::EventPacketFlatbuffer*>(fbPtr);
+		// auto e = ev->UnPack();	
 
-				dataSize = readBuffer_.size();
-				dataPtr  = readBuffer_.data();
+		for(auto ev: eventPacket->elements)
+			lastEvents_.add(ev);
 
-				// Decompress packet.
-				if (inputInfo_->compression_ != dv::CompressionType::NONE) {
-					decompressData(dataPtr, dataSize);
+		bool lastPacket = (std::next(iterPackets_) == packetsToRead_.end());
 
-					dataSize = decompressBuffer_.size();
-					dataPtr  = decompressBuffer_.data();
-				}
-				// add dataPtr and dataSize to cache
-				std::vector<char> temp(dataPtr, dataPtr + dataSize);
-				cacheBuffer_.addToCache(*iter, temp, dataSize);
-			}
-
-			// dataPtr and dataSize now contain the uncompressed, raw flatbuffer.
-			if (!flatbuffers::BufferHasIdentifier(dataPtr, "EVTS", true)) {
-				// Wrong type identifier for this flatbuffer (file_identifier field).
-				// This should never happen, ignore packet.
-				std::cout << " Flatbuffer identifier is 'EVTS' \n";
-				return false;
-			}
-
-			// Unpack event packet mode 1.
-        	auto dataEventPacket = dv::GetSizePrefixedEventPacket(dataPtr);
-        	auto eventPacket     = std::unique_ptr<dv::EventPacket>(dataEventPacket->UnPack());
-
-			// Unpack event packet mode 2.
-			// auto fbPtr          = flatbuffers::GetSizePrefixedRoot<void>(dataPtr);
-			// auto eventsPacketFb = reinterpret_cast<const dv::EventPacketFlatbuffer*>(fbPtr);
-			// auto e = ev->UnPack();			
-
-			cv::Mat image = cv::Mat::zeros(cv::Size(128,128),CV_8UC3);
-			for(auto ev: eventPacket->elements){
-				if (ev.polarity())
-                	image.at<cv::Vec3b>(ev.y(), ev.x()) = cv::Vec3b(0,0,255);
-            	else
-                	image.at<cv::Vec3b>(ev.y(), ev.x()) = cv::Vec3b(0,255,0);
-			}
-
-			cv::imshow("tt",image);
-			cv::waitKey(0);
-
-			bool lastPacket = (std::next(iter) == packetsToRead.cend());
-			if (lastPacket)
-				std::cout << "Finished file \n";
+		if (lastPacket || iterPackets_ == packetsToRead_.end() ){
+			std::cout << "Finished file \n";
+			return false;
+		}else{
+			iterPackets_++;
+			return true;
 		}
 	}
 
-	bool AEDAT4Streamer::events(dv::EventStore &_events){
-
+	void AEDAT4Streamer::events(dv::EventStore &_events , int _microseconds){
+		
+		return;
 	}
+
     bool AEDAT4Streamer::image(cv::Mat &_image){
-
+		return false;
 	}
 
-	bool AEDAT4Streamer::cutUsingTime(int _microseconds){
-
-	}
 }

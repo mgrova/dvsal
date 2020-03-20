@@ -72,33 +72,25 @@ namespace dvsal{
     	static std::ifstream openFile(const std::filesystem::path &_fPath);
     public:
 		bool init();
-		bool events(dv::EventStore &_events);
+		void events(dv::EventStore &_events , int _microseconds);
         bool image(cv::Mat &_image); // Fake image using events
         bool step();
-        bool cutUsingTime(int _microseconds);
 
     private:
-        std::ifstream datasetFile_;
-
-        dv::EventStore events_;
-
-        /// Input stream to read data from.
+        dv::EventStore lastEvents_;
         std::istream *inputStream_;
-        /// Input information from header.
         const InputInformation *inputInfo_;
-        /// Support LZ4 compression.
         std::shared_ptr<struct LZ4F_dctx_s> compressionLZ4_;
-        /// Support Zstd compression.
         std::shared_ptr<struct ZSTD_DCtx_s> compressionZstd_;
-        /// Buffer to hold data while decoding.
         std::vector<char> readBuffer_;
         std::vector<char> decompressBuffer_;
-        /// cache for data decompressed
+        std::vector<dv::PacketBuffer> packetsToRead_;
         dv::FileBuffer cacheBuffer_;
-        /// limit consecutive log messages
         bool slowdownWarningSent_;
 
         static constexpr size_t lz4CompressionChunkSize_ = 64 * 1024;
+
+        std::vector<dv::PacketBuffer>::iterator iterPackets_;
     
     private:
         static std::unique_ptr<dv::FileDataTable> loadFileDataTable(std::ifstream &_fStream, InputInformation &_fInfo);

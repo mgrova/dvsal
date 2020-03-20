@@ -101,10 +101,11 @@ namespace dvsal{
         return false;
     }
 
-    bool CameraDVS128Streamer::events(dv::EventStore &_events){
+    void CameraDVS128Streamer::events(dv::EventStore &_events , int _microseconds){
+		events_ = events_.sliceTime(_microseconds);
         _events = events_;
-
-        return true;
+        
+		return;
     }    
 
     bool CameraDVS128Streamer::image(cv::Mat &_image){
@@ -112,13 +113,6 @@ namespace dvsal{
 
         return false;
     }   
-
-    bool CameraDVS128Streamer::cutUsingTime(int _microseconds){
-
-        events_ = events_.sliceTime(_microseconds);
-        return true;
-    }
-
     void CameraDVS128Streamer::usbShutdownHandler(void *_ptr){
         (void) (_ptr); // UNUSED.
 

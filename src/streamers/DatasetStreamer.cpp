@@ -55,28 +55,22 @@ namespace dvsal{
         }
         dv::Event event(static_cast<int64_t>(timestamp * 1000000) , static_cast<int16_t>(x) , static_cast<int16_t>(y) , static_cast<uint8_t>(pol));
         
-        events_.add(event);
+        lastEvents_.add(event);
 
         return true;
     }
 
 
-    bool DatasetStreamer::events(dv::EventStore &_events){
-        _events = events_;
-
-        return true;
-    } 
-
-    bool DatasetStreamer::cutUsingTime(int _microseconds){
+    void DatasetStreamer::events(dv::EventStore &_events , int _microseconds){
+        lastEvents_ = lastEvents_.sliceTime(_microseconds);
+        _events = lastEvents_;
         
-        events_ = events_.sliceTime(_microseconds);
-        return true;
-    }
-
+        return;
+    } 
 
     bool DatasetStreamer::image(cv::Mat &_image){
 
-        dv::EventStore eventsLast30000microseconds = events_.sliceTime(-10000); //666   
+        dv::EventStore eventsLast30000microseconds = lastEvents_.sliceTime(-10000); //666   
 
         for (const auto &event : eventsLast30000microseconds) {
             if (event.polarity())
@@ -84,7 +78,6 @@ namespace dvsal{
             else
                 _image.at<cv::Vec3b>(event.y(), event.x()) = cv::Vec3b(0,255,0);
         }
-
 
         return true;
     }    

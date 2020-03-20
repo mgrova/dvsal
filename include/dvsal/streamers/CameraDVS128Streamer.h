@@ -34,11 +34,14 @@ namespace dvsal{
 
     class CameraDVS128Streamer : public Streamer{
     public:
+        CameraDVS128Streamer(){};
+        ~CameraDVS128Streamer(){};
+
 		bool init();
-		bool events(dv::EventStore &_events);
+		void events(dv::EventStore &_events , int _microseconds);
         bool image(cv::Mat &_image); // Fake image using events
         bool step();
-        bool cutUsingTime(int _microseconds);
+
     private:
         static void usbShutdownHandler(void *_ptr) ;
     private:

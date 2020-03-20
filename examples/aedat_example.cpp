@@ -19,10 +19,10 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#include<dv-sdk/utils.h>
+#include <dv-sdk/utils.h>
 #include <dvsal/streamers/Streamer.h>
 #include <dvsal/streamers/AEDAT4Streamer.h>
-#include<filesystem>
+#include <filesystem>
 
 dvsal::Streamer *streamer = nullptr;
 
@@ -39,8 +39,24 @@ int main(int _argc, char **_argv){
         std::cout << "Error creating streamer" << std::endl;
         return 0;
     }
+    bool run = true;
     
-    streamer->step();
+    while(run){
+        streamer->step();
+        dv::EventStore UnfiltEvents;
+        // streamer->events(UnfiltEvents , 1000);
+
+        // cv::Mat image = cv::Mat::zeros(cv::Size(128,128),CV_8UC3);
+		// for (auto ev: UnfiltEvents){
+        // 	if (ev.polarity())
+		// 		image.at<cv::Vec3b>(ev.y(), ev.x()) = cv::Vec3b(0,0,255);
+		// 	else
+		// 		image.at<cv::Vec3b>(ev.y(), ev.x()) = cv::Vec3b(0,255,0);
+        // }
+		// cv::imshow("tt",image);
+		// cv::waitKey(0);
+
+    }
 
     return 0;
 }
