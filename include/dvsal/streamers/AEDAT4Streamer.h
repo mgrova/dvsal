@@ -76,6 +76,10 @@ namespace dvsal{
         bool image(cv::Mat &_image); // Fake image using events
         bool step();
 
+        dv::EventStore lastEvents(){
+            return lastEvents_;
+        };
+
     private:
         dv::EventStore lastEvents_;
         std::istream *inputStream_;

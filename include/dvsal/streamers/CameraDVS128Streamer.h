@@ -42,13 +42,17 @@ namespace dvsal{
         bool image(cv::Mat &_image); // Fake image using events
         bool step();
 
+        dv::EventStore lastEvents(){
+            return lastEvents_;
+        };
+
     private:
         static void usbShutdownHandler(void *_ptr) ;
     private:
         libcaer::devices::dvs128 *dvs128Handle_ = nullptr;        
         constexpr static std::atomic<bool> globalShutdown_{false};
 
-        dv::EventStore events_;
+        dv::EventStore lastEvents_;
     };
 }
 

@@ -40,10 +40,16 @@ namespace dvsal{
         void events(dv::EventStore &_events , int _microseconds);
         bool image(cv::Mat &_image);
 
+        dv::EventStore lastEvents(){
+            return lastEvents_;
+        };
+        
     private:
         std::ifstream datasetFile_;
-
+        std::string datasetPath_;
+        
         dv::EventStore lastEvents_;
+
     };
 
     

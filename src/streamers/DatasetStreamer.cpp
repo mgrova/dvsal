@@ -25,16 +25,16 @@
 namespace dvsal{
     
     DatasetStreamer::DatasetStreamer(const std::string _string){
-        datasetFile_ = std::ifstream(_string);
+        datasetPath_ = _string;    
     };
     
     bool DatasetStreamer::init(){
-        std::string datasetPath((std::istreambuf_iterator<char>(datasetFile_)), std::istreambuf_iterator<char>());
-        if(!std::filesystem::exists(datasetPath)){
+        if(!std::filesystem::exists(datasetPath_)){
             std::cout << "Dataset file not exist" << std::endl;
             return false;
         }
 
+        datasetFile_ = std::ifstream(datasetPath_);
         return true;
     }
 

@@ -92,7 +92,7 @@ namespace dvsal{
 
                     dv::Event event(static_cast<int64_t>(ts) , static_cast<int16_t>(x) , static_cast<int16_t>(y) , static_cast<uint8_t>(pol));
         
-                    events_.add(event);
+                    lastEvents_.add(event);
 			    }
 		    }
         }
@@ -102,8 +102,8 @@ namespace dvsal{
     }
 
     void CameraDVS128Streamer::events(dv::EventStore &_events , int _microseconds){
-		events_ = events_.sliceTime(_microseconds);
-        _events = events_;
+		lastEvents_ = lastEvents_.sliceTime(_microseconds);
+        _events = lastEvents_;
         
 		return;
     }    

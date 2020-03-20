@@ -23,12 +23,14 @@
 #include <dvsal/streamers/Streamer.h>
 #include <dvsal/streamers/AEDAT4Streamer.h>
 #include <filesystem>
+#include <thread>
 
 dvsal::Streamer *streamer = nullptr;
 
 int main(int _argc, char **_argv){
 
-    std::filesystem::path filePath{_argv[1]};
+    std::string path = _argv[1];
+    std::filesystem::path filePath{path};
     std::cout << filePath <<std::endl;
 
     std::ifstream fileStream = dvsal::AEDAT4Streamer::openFile(filePath);
@@ -40,21 +42,29 @@ int main(int _argc, char **_argv){
         return 0;
     }
     bool run = true;
-    
+    int64_t lastHighest = 0;
+    int64_t microsec = 1/(30*0.000001);
     while(run){
         streamer->step();
-        dv::EventStore UnfiltEvents;
-        // streamer->events(UnfiltEvents , 1000);
 
-        // cv::Mat image = cv::Mat::zeros(cv::Size(128,128),CV_8UC3);
-		// for (auto ev: UnfiltEvents){
-        // 	if (ev.polarity())
-		// 		image.at<cv::Vec3b>(ev.y(), ev.x()) = cv::Vec3b(0,0,255);
-		// 	else
-		// 		image.at<cv::Vec3b>(ev.y(), ev.x()) = cv::Vec3b(0,255,0);
-        // }
-		// cv::imshow("tt",image);
-		// cv::waitKey(0);
+        if (streamer->lastEvents().getHighestTime() > microsec + lastHighest){                
+            dv::EventStore outputEvents;
+            streamer->events(outputEvents , lastHighest);
+            
+            cv::Mat image = cv::Mat::zeros(cv::Size(128,128),CV_8UC3);
+            for (auto ev: outputEvents){
+                if (ev.polarity())
+                    image.at<cv::Vec3b>(ev.y(), ev.x()) = cv::Vec3b(0,0,255);
+                else
+                    image.at<cv::Vec3b>(ev.y(), ev.x()) = cv::Vec3b(0,255,0);
+            }
+            cv::imshow("tt",image);
+            cv::waitKey(49);
+
+            lastHighest = outputEvents.getHighestTime();
+		}
+
+        std::this_thread::sleep_for( std::chrono::milliseconds(1) );
 
     }
 

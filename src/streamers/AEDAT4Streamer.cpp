@@ -59,9 +59,12 @@ namespace dvsal{
 			std::cout << "Packets to read empty \n";
 		}
 
-		std::cout << "Packets to read: " << packetsToRead_.size() << std::endl;
 		iterPackets_ = packetsToRead_.begin();
 
+		std::cout << "Packets to read: " << packetsToRead_.size() << std::endl;
+		std::cout << "File size (Parser): " << inputInfo_->fileSize_ << std::endl;
+		std::cout << "Compression: " << dv::EnumNameCompressionType(inputInfo_->compression_) << std::endl;
+		
 		return true;
 	}
 
@@ -414,7 +417,9 @@ namespace dvsal{
 	}
 
 	void AEDAT4Streamer::events(dv::EventStore &_events , int _microseconds){
-		
+		lastEvents_ = lastEvents_.sliceTime(_microseconds);
+        _events = lastEvents_;
+
 		return;
 	}
 
