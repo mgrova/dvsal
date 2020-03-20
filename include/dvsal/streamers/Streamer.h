@@ -35,7 +35,9 @@ namespace dvsal{
 
     class Streamer{
     public:
-      enum class eModel { dataset , dvs128 };
+      enum class eModel { dataset , dvs128 , AEDAT4 };
+
+      virtual ~Streamer() {}
 
 		  static Streamer *create(eModel _type);
 		  static Streamer *create(std::string _type);

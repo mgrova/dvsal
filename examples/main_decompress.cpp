@@ -19,33 +19,23 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#ifndef CAMERA_DAVIS_STREAMER_H_
-#define CAMERA_DAVIS_STREAMER_H_
+#include<dv-sdk/utils.h>
+#include <dvsal/streamers/AEDAT4Streamer.h>
+#include<filesystem>
 
-#include <libcaercpp/devices/davis.hpp>
+int main(int _argc, char **_argv){
 
-#include <atomic>
-#include <csignal>
+    std::filesystem::path filePath{_argv[1]};
 
-#include <dvsal/streamers/Streamer.h>
+    std::ifstream fileStream = dvsal::AEDAT4Streamer::openFile(filePath);
+	dvsal::InputInformation fileInfo = dvsal::AEDAT4Streamer::parseHeader(fileStream);
 
-namespace dvsal{
+    dvsal::AEDAT4Streamer *streamer = new dvsal::AEDAT4Streamer();
+    streamer->setup(&fileStream , &fileInfo);
 
-    class CameraDavisStreamer : public Streamer{
-    public:
-		bool init(const std::string &_string);
-		bool events(dv::EventStore &_events);
-        bool image(cv::Mat &_image); // Fake image using events
-        bool step();
-        bool cutUsingTime(int _microseconds);
-    private:
-        static void usbShutdownHandler(void *_ptr) ;
-    private:
-        libcaer::devices::davis *davisHandle_ = nullptr;        
-        constexpr static std::atomic<bool> globalShutdown_{false};
+    std::cout << filePath <<std::endl;
 
-        dv::EventStore events_;
-    };
+    streamer->step();
+
+    return 0;
 }
-
-#endif

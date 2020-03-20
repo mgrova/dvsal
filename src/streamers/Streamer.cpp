@@ -21,6 +21,7 @@
 
 
 #include <dvsal/streamers/Streamer.h>
+#include <dvsal/streamers/AEDAT4Streamer.h>
 #include <dvsal/streamers/DatasetStreamer.h>
 #include <dvsal/streamers/CameraDVS128Streamer.h>
 
@@ -29,6 +30,8 @@ namespace dvsal{
     Streamer * Streamer::create(eModel _type) {
 		if (_type == eModel::dataset) {
 			return new DatasetStreamer();
+        // }else if (_type == eModel::AEDAT4) {
+		// 	return new AEDAT4Streamer();
 		}else if (_type == eModel::dvs128) {
 			return new CameraDVS128Streamer();
         }else {

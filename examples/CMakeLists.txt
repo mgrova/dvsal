@@ -22,3 +22,7 @@
 add_executable(simple_example main.cpp)
 target_include_directories(simple_example PRIVATE ../include)
 target_link_libraries(simple_example LINK_PUBLIC dvsal)
+
+add_executable(decompress_example main_decompress.cpp)
+target_include_directories(decompress_example PRIVATE ../include)
+target_link_libraries(decompress_example LINK_PUBLIC dvsal)

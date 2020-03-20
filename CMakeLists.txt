@@ -19,7 +19,7 @@
 ##  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ##---------------------------------------------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 PROJECT(dvsal VERSION 0.1)
 
 option(BUILD_EXAMPLES		"Compile examples"	ON)
@@ -32,7 +32,7 @@ file(GLOB_RECURSE DVSAL_SOURCES "./src/*.cpp")
 
 add_library(${PROJECT_NAME} SHARED ${DVSAL_HEADERS} ${DVSAL_SOURCES})
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
-set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE C)
+set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE C CXX_STANDARD 17)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -87,6 +87,22 @@ if (${flow_FOUND})
   target_link_libraries(${PROJECT_NAME} LINK_PUBLIC flow::flow)
   target_compile_definitions(${PROJECT_NAME} PUBLIC HAS_FLOW)
 endif(${flow_FOUND})
+
+# Compression support
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LZ4 REQUIRED liblz4)
+if(${LZ4_FOUND})
+  target_include_directories(${PROJECT_NAME} PUBLIC ${LZ4_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME} LINK_PUBLIC ${LZ4_LIBRARIES})
+  message(STATUS "liblz4 Found and Enabled")
+endif()
+
+pkg_check_modules(zstd REQUIRED libzstd)
+if(${zstd_FOUND})
+  target_include_directories(${PROJECT_NAME} PUBLIC ${zstd_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME} LINK_PUBLIC ${zstd_LIBRARIES})
+  message(STATUS "libzstd Found and Enabled")
+endif()
 
 ##################################################
 ######    Examples.                       ########
