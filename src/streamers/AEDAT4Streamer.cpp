@@ -22,10 +22,13 @@
 #include <dvsal/streamers/AEDAT4Streamer.h>
 
 namespace dvsal{
-
-	void AEDAT4Streamer::setup(std::istream *_inStream, const InputInformation *_inInfo) {
+	AEDAT4Streamer::AEDAT4Streamer(std::istream *_inStream, const InputInformation *_inInfo){
 		inputStream_ = _inStream;
 		inputInfo_   = _inInfo;
+	}
+
+	bool AEDAT4Streamer::init() {
+
 		cacheBuffer_ = dv::FileBuffer(inputInfo_->dataTable_->Table);
 
 		// Build LZ4 decompression context.
@@ -37,6 +40,8 @@ namespace dvsal{
 		if (inputInfo_->compression_ == dv::CompressionType::ZSTD || inputInfo_->compression_ == dv::CompressionType::ZSTD_HIGH) {
 			compressionZstd_ = zstdInitDecompressionContext();
 		}
+
+		return true;
 	}
 
 	InputInformation AEDAT4Streamer::parseHeader(std::ifstream &_fStream) {
@@ -411,4 +416,14 @@ namespace dvsal{
 		}
 	}
 
+	bool AEDAT4Streamer::events(dv::EventStore &_events){
+
+	}
+    bool AEDAT4Streamer::image(cv::Mat &_image){
+
+	}
+
+	bool AEDAT4Streamer::cutUsingTime(int _microseconds){
+
+	}
 }

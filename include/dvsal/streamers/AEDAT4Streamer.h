@@ -23,9 +23,9 @@
 #define AEDAT_4_STREAMER_H_
 
 #include <dvsal/streamers/Streamer.h>
-#include "dvsal/utils/FileDataTable.hpp"
-#include "dvsal/utils/filebuffer.hpp"
-#include "dvsal/utils/IOHeader.hpp"
+#include <dvsal/utils/FileDataTable.hpp>
+#include <dvsal/utils/filebuffer.hpp>
+#include <dvsal/utils/IOHeader.hpp>
 
 #include <fstream>
 #include <sstream>
@@ -62,16 +62,16 @@ namespace dvsal{
     };
 
 
-    class AEDAT4Streamer {
+    class AEDAT4Streamer : public Streamer {
     public:
-        AEDAT4Streamer(){}
-         ~AEDAT4Streamer(){};
+        AEDAT4Streamer(std::istream *_inStream, const InputInformation *_inInfo);
 
-        void setup(std::istream *_inStream, const InputInformation *_inInfo);
+        ~AEDAT4Streamer(){};
+
         static InputInformation parseHeader(std::ifstream &_fStream);
     	static std::ifstream openFile(const std::filesystem::path &_fPath);
     public:
-		bool init(const std::string &_string);
+		bool init();
 		bool events(dv::EventStore &_events);
         bool image(cv::Mat &_image); // Fake image using events
         bool step();
@@ -113,5 +113,6 @@ namespace dvsal{
 
     };
 }
+
 
 #endif

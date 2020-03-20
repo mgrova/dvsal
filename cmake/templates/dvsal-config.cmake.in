@@ -5,6 +5,8 @@ find_dependency(libcaer)
 find_dependency(dv)
 find_dependency(Boost)
 find_dependency(VTK)
+find_dependency(L4Z)
+find_dependency(zstd)
 
 if(NOT TARGET dvsal::dvsal)
     include("${dvsal_CMAKE_DIR}/dvsal-targets.cmake")

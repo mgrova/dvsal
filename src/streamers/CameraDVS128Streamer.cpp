@@ -23,7 +23,7 @@
 
 namespace dvsal{
 
-    bool CameraDVS128Streamer::init(const std::string &_string){
+    bool CameraDVS128Streamer::init(){
         // Open a DVS128, give it a device ID of 1, and don't care about USB bus or SN restrictions.
         dvs128Handle_ = new libcaer::devices::dvs128(1, 0, 0, "");
 

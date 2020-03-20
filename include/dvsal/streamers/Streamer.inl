@@ -19,37 +19,9 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-
-#include <dvsal/streamers/Streamer.h>
-#include <dvsal/streamers/AEDAT4Streamer.h>
-#include <dvsal/streamers/DatasetStreamer.h>
-#include <dvsal/streamers/CameraDVS128Streamer.h>
-
 namespace dvsal{
-
-    Streamer * Streamer::create(eModel _type) {
-		if (_type == eModel::dataset) {
-			return new DatasetStreamer();
-        // }else if (_type == eModel::AEDAT4) {
-		// 	return new AEDAT4Streamer();
-		}else if (_type == eModel::dvs128) {
-			return new CameraDVS128Streamer();
-        }else {
-            std::cerr << "[DV-STREAMER]  unknown model type" << std::endl;
-			return nullptr;
-        }
+    template<typename _Type, typename... _T>
+    Streamer * Streamer::create(_T&&... _arg) {
+        return new _Type(std::forward<_T>(_arg)...);
     }
-    
-    Streamer * Streamer::create(std::string _type) {
-		if (_type == "dataset") {
-			return new DatasetStreamer();
-		}else if (_type == "dvs128") {
-			return new CameraDVS128Streamer();
-        }else {
-            std::cerr << "[DV-STREAMER]  unknown model type" << std::endl;
-			return nullptr;
-        }
-    }
-
-
 }

@@ -19,44 +19,28 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
+#include<dv-sdk/utils.h>
 #include <dvsal/streamers/Streamer.h>
-#include <dvsal/processors/corner_detectors/FastDetector.h>
+#include <dvsal/streamers/AEDAT4Streamer.h>
+#include<filesystem>
 
-#include "thread"
-
-bool run = true;
 dvsal::Streamer *streamer = nullptr;
-dvsal::Detector *detector = nullptr;
 
 int main(int _argc, char **_argv){
 
-    streamer = dvsal::Streamer::create(dvsal::Streamer::eModel::dataset);
-    
-    detector = new dvsal::FastDetector();
+    std::filesystem::path filePath{_argv[1]};
+    std::cout << filePath <<std::endl;
 
-    std::string datasetPath = "/home/marrcogrova/Downloads/shapes_rotation/events.txt";
-    if (!streamer->init(datasetPath)){
+    std::ifstream fileStream = dvsal::AEDAT4Streamer::openFile(filePath);
+	dvsal::InputInformation fileInfo = dvsal::AEDAT4Streamer::parseHeader(fileStream);
+    
+    streamer = dvsal::Streamer::create<dvsal::AEDAT4Streamer>(&fileStream , &fileInfo);
+    if(!streamer->init()){
         std::cout << "Error creating streamer" << std::endl;
         return 0;
     }
-
-    while(run){
-        run = streamer->step();
-
-        dv::EventStore UnfiltEvents;
-        streamer->events(UnfiltEvents);
-        std::cout << UnfiltEvents.size() << std::endl;
-
-        if (UnfiltEvents.size() > 1000){
-            dv::EventStore ev = UnfiltEvents.slice(-1000);
-            detector->eventCallback(ev);
-
-            dv::EventStore corners = detector->cornersDetected();
-        }
-        std::this_thread::sleep_for( std::chrono::milliseconds(1) );
-    }
-
-    std::cout << "finished program" << std::endl;
+    
+    streamer->step();
 
     return 0;
 }

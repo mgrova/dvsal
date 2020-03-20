@@ -19,10 +19,10 @@
 ##  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ##---------------------------------------------------------------------------------------------------------------------
 
-add_executable(simple_example main.cpp)
-target_include_directories(simple_example PRIVATE ../include)
-target_link_libraries(simple_example LINK_PUBLIC dvsal)
+add_executable(dataset_example dataset_example.cpp)
+target_include_directories(dataset_example PRIVATE ../include)
+target_link_libraries(dataset_example LINK_PUBLIC dvsal)
 
-add_executable(decompress_example main_decompress.cpp)
-target_include_directories(decompress_example PRIVATE ../include)
-target_link_libraries(decompress_example LINK_PUBLIC dvsal)
+add_executable(aedat_example aedat_example.cpp)
+target_include_directories(aedat_example PRIVATE ../include)
+target_link_libraries(aedat_example LINK_PUBLIC dvsal)

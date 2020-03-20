@@ -64,9 +64,9 @@ if(${OpenCV_FOUND})
   target_compile_definitions(${PROJECT_NAME} PUBLIC HAS_OPENCV)
 endif()
 
-find_package(Boost REQUIRED) # COMPONENTS system filesystem)
+find_package(Boost REQUIRED) 
 if (${Boost_FOUND})
-  target_link_libraries(${PROJECT_NAME} LINK_PUBLIC Boost::boost) # Boost::system Boost::filesystem)
+  target_link_libraries(${PROJECT_NAME} LINK_PUBLIC Boost::boost) 
   target_compile_definitions(${PROJECT_NAME} PUBLIC HAS_BOOST)
 endif(${Boost_FOUND})
 

@@ -32,7 +32,9 @@ namespace dvsal{
 
     class DatasetStreamer : public Streamer{
     public:
-		bool init(const std::string &_string);
+        DatasetStreamer(const std::string _string);
+
+		bool init();
 		bool events(dv::EventStore &_events);
         bool image(cv::Mat &_image); // Fake image using events
         bool step();

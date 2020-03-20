@@ -34,7 +34,7 @@ namespace dvsal{
 
     class CameraDVS128Streamer : public Streamer{
     public:
-		bool init(const std::string &_string);
+		bool init();
 		bool events(dv::EventStore &_events);
         bool image(cv::Mat &_image); // Fake image using events
         bool step();

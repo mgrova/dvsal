@@ -19,15 +19,18 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <dvsal/streamers/DatasetStreamer.h>
 
 namespace dvsal{
-
-    bool DatasetStreamer::init(const std::string &_string){
+    
+    DatasetStreamer::DatasetStreamer(const std::string _string){
         datasetFile_ = std::ifstream(_string);
-        
-        if(!boost::filesystem::exists(_string)){
+    };
+    
+    bool DatasetStreamer::init(){
+        std::string datasetPath((std::istreambuf_iterator<char>(datasetFile_)), std::istreambuf_iterator<char>());
+        if(!std::filesystem::exists(datasetPath)){
             std::cout << "Dataset file not exist" << std::endl;
             return false;
         }

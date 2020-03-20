@@ -35,24 +35,23 @@ namespace dvsal{
 
     class Streamer{
     public:
-      enum class eModel { dataset , dvs128 , AEDAT4 };
-
-      virtual ~Streamer() {}
-
-		  static Streamer *create(eModel _type);
-		  static Streamer *create(std::string _type);
+      template<typename _Type, typename... _T>
+		  static Streamer *create( _T&&... _arg);
+      
+      virtual ~Streamer() {};
 
     public:
-		  virtual bool init(const std::string &_string = "") = 0;
-		  virtual bool step() = 0;
+      
+		  virtual bool init() = 0;
+      virtual bool step() = 0;
       
       virtual bool events(dv::EventStore &_events) = 0;
       virtual bool image(cv::Mat &_image) = 0; // Fake image using events
       virtual bool cutUsingTime(int _microseconds) = 0;
 
-    };
-
-    
+    };    
 }
+
+#include "Streamer.inl"
 
 #endif
