@@ -22,12 +22,26 @@
 #include <dvsal/streamers/AEDAT4Streamer.h>
 
 namespace dvsal{
-	AEDAT4Streamer::AEDAT4Streamer(std::istream *_inStream, const InputInformation *_inInfo){
-		inputStream_ = _inStream;
-		inputInfo_   = _inInfo;
+	AEDAT4Streamer::AEDAT4Streamer(const std::filesystem::path _filePath){
+		
+		if (!std::filesystem::exists(_filePath) || !std::filesystem::is_regular_file(_filePath)) {
+			throw std::runtime_error("File doesn't exist or cannot be accessed.");
+		}
+
+		if (_filePath.extension().string() != (".aedat4")) {
+			throw std::runtime_error("Unknown file extension '" + _filePath.extension().string() + "'.");
+		}
+
+		inputStream_ = new std::ifstream(_filePath.string(), std::ios::in | std::ios::binary);
+
+		// Enable exceptions on failure to open file.
+		inputStream_->exceptions(std::ifstream::badbit | std::ifstream::failbit | std::ifstream::eofbit);
+		
 	}
 
 	bool AEDAT4Streamer::init() {
+		// Construct input info struct
+		parseHeader(*(static_cast<std::ifstream*>(inputStream_)));
 
 		cacheBuffer_ = dv::FileBuffer(inputInfo_->dataTable_->Table);
 
@@ -68,7 +82,7 @@ namespace dvsal{
 		return true;
 	}
 
-	InputInformation AEDAT4Streamer::parseHeader(std::ifstream &_fStream) {
+	void AEDAT4Streamer::parseHeader(std::ifstream &_fStream) {
 		// Extract AEDAT version.
 		char aedatVersion[static_cast<std::underlying_type_t<dv::Constants>>(dv::Constants::AEDAT_VERSION_LENGTH)];
 		_fStream.read(
@@ -81,7 +95,7 @@ namespace dvsal{
 			throw std::runtime_error("AEDAT4.0: no valid version line found.");
 		}
 
-		InputInformation result;
+		inputInfo_ = new InputInformation();
 
 		// We want to understand what data is in this file,
 		// and return actionable elements to our caller.
@@ -119,20 +133,20 @@ namespace dvsal{
 		auto header = dv::UnPackIOHeader(ioHeader.get());
 
 		// Set file-level return information.
-		result.fileSize_          = fileSize;
-		result.compression_       = header->compression;
-		result.dataTablePosition_ = header->dataTablePosition;
-		result.dataTableSize_
+		inputInfo_->fileSize_          = fileSize;
+		inputInfo_->compression_       = header->compression;
+		inputInfo_->dataTablePosition_ = header->dataTablePosition;
+		inputInfo_->dataTableSize_
 			= (header->dataTablePosition < 0) ? (0) : (fileSize - static_cast<size_t>(header->dataTablePosition));
 
 		// Get file data table to determine seek position.
-		result.dataTable_ = loadFileDataTable(_fStream, result);
+		inputInfo_->dataTable_ = loadFileDataTable(_fStream, *inputInfo_);
 
-		if (!result.dataTable_->Table.empty()) {
+		if (!inputInfo_->dataTable_->Table.empty()) {
 			int64_t lowestTimestamp  = INT64_MAX;
 			int64_t highestTimestamp = 0;
 
-			for (const auto &inputDef : result.dataTable_->Table) {
+			for (const auto &inputDef : inputInfo_->dataTable_->Table) {
 				// No timestamp is denoted by -1.
 				if (inputDef.TimestampStart == -1) {
 					continue;
@@ -148,37 +162,18 @@ namespace dvsal{
 				}
 			}
 
-			result.timeLowest_  = lowestTimestamp;
-			result.timeHighest_ = highestTimestamp;
+			inputInfo_->timeLowest_  = lowestTimestamp;
+			inputInfo_->timeHighest_ = highestTimestamp;
 		}
 		else {
-			result.timeLowest_  = 0;
-			result.timeHighest_ = INT64_MAX;
+			inputInfo_->timeLowest_  = 0;
+			inputInfo_->timeHighest_ = INT64_MAX;
 		}
 
-		result.timeDifference_ = result.timeHighest_ - result.timeLowest_;
-		result.timeShift_      = result.timeLowest_;
+		inputInfo_->timeDifference_ = inputInfo_->timeHighest_ - inputInfo_->timeLowest_;
+		inputInfo_->timeShift_      = inputInfo_->timeLowest_;
 
-		return (result);
-	}
-
-	std::ifstream AEDAT4Streamer::openFile(const std::filesystem::path &fPath) {
-		if (!std::filesystem::exists(fPath) || !std::filesystem::is_regular_file(fPath)) {
-			throw std::runtime_error("File doesn't exist or cannot be accessed.");
-		}
-
-		if (fPath.extension().string() != (".aedat4")) {
-			throw std::runtime_error("Unknown file extension '" + fPath.extension().string() + "'.");
-		}
-
-		std::ifstream fStream;
-
-		// Enable exceptions on failure to open file.
-		fStream.exceptions(std::ifstream::badbit | std::ifstream::failbit | std::ifstream::eofbit);
-
-		fStream.open(fPath.string(), std::ios::in | std::ios::binary);
-
-		return (fStream);
+		return;
 	}
 
     std::unique_ptr<dv::FileDataTable> AEDAT4Streamer::loadFileDataTable(std::ifstream &_fStream, InputInformation &_fInfo) {

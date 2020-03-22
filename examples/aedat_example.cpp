@@ -32,11 +32,8 @@ int main(int _argc, char **_argv){
     std::string path = _argv[1];
     std::filesystem::path filePath{path};
     std::cout << filePath <<std::endl;
-
-    std::ifstream fileStream = dvsal::AEDAT4Streamer::openFile(filePath);
-	dvsal::InputInformation fileInfo = dvsal::AEDAT4Streamer::parseHeader(fileStream);
     
-    streamer = dvsal::Streamer::create<dvsal::AEDAT4Streamer>(&fileStream , &fileInfo);
+    streamer = dvsal::Streamer::create<dvsal::AEDAT4Streamer>(path);
     if(!streamer->init()){
         std::cout << "Error creating streamer" << std::endl;
         return 0;

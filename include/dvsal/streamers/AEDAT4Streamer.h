@@ -64,12 +64,10 @@ namespace dvsal{
 
     class AEDAT4Streamer : public Streamer {
     public:
-        AEDAT4Streamer(std::istream *_inStream, const InputInformation *_inInfo);
+        AEDAT4Streamer(const std::filesystem::path _filePath);
 
         ~AEDAT4Streamer(){};
 
-        static InputInformation parseHeader(std::ifstream &_fStream);
-    	static std::ifstream openFile(const std::filesystem::path &_fPath);
     public:
 		bool init();
 		void events(dv::EventStore &_events , int _microseconds);
@@ -83,7 +81,7 @@ namespace dvsal{
     private:
         dv::EventStore lastEvents_;
         std::istream *inputStream_;
-        const InputInformation *inputInfo_;
+        InputInformation *inputInfo_;
         std::shared_ptr<struct LZ4F_dctx_s> compressionLZ4_;
         std::shared_ptr<struct ZSTD_DCtx_s> compressionZstd_;
         std::vector<char> readBuffer_;
@@ -97,6 +95,7 @@ namespace dvsal{
         std::vector<dv::PacketBuffer>::iterator iterPackets_;
     
     private:
+        void parseHeader(std::ifstream &_fStream);
         static std::unique_ptr<dv::FileDataTable> loadFileDataTable(std::ifstream &_fStream, InputInformation &_fInfo);
         static std::shared_ptr<struct LZ4F_dctx_s> lz4InitDecompressionContext();
 	    static std::shared_ptr<struct ZSTD_DCtx_s> zstdInitDecompressionContext();    
@@ -105,6 +104,7 @@ namespace dvsal{
     
         static void decompressZstd(const char *_dataPtr, size_t _dataSize, std::vector<char> &_decompressBuffer,
 		                            struct ZSTD_DCtx_s *_decompressContext);
+                                    
         void decompressData(const char *_dataPtr, size_t _dataSize);
 
     };
