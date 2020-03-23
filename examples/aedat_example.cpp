@@ -38,9 +38,12 @@ int main(int _argc, char **_argv){
         std::cout << "Error creating streamer" << std::endl;
         return 0;
     }
+
+    int rate = 30;
+
     bool run = true;
     int64_t lastHighest = 0;
-    int64_t microsec = 1/(30*0.000001);
+    int64_t microsec = 1/(rate * 0.000001);
     while(run){
         streamer->step();
 
@@ -55,7 +58,7 @@ int main(int _argc, char **_argv){
                 else
                     image.at<cv::Vec3b>(ev.y(), ev.x()) = cv::Vec3b(0,255,0);
             }
-            cv::imshow("tt",image);
+            cv::imshow("test image",image);
             cv::waitKey(49);
 
             lastHighest = outputEvents.getHighestTime();

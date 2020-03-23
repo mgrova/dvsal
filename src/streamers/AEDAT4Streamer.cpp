@@ -397,11 +397,15 @@ namespace dvsal{
 		// auto eventsPacketFb = reinterpret_cast<const dv::EventPacketFlatbuffer*>(fbPtr);
 		// auto e = ev->UnPack();	
 
+		if(!savedFirstTimestamp_){
+			firstTimestamp_ = eventPacket->elements[0].timestamp();
+			savedFirstTimestamp_ = true;
+		}
+
 		for(auto ev: eventPacket->elements)
-			lastEvents_.add(ev);
+			lastEvents_.add(dv::Event( ev.timestamp() - firstTimestamp_ , ev.x() , ev.y() ,ev.polarity()));
 
 		bool lastPacket = (std::next(iterPackets_) == packetsToRead_.end());
-
 		if (lastPacket || iterPackets_ == packetsToRead_.end() ){
 			std::cout << "Finished file \n";
 			return false;

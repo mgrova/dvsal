@@ -55,11 +55,11 @@ namespace dvsal{
         }
         dv::Event event(static_cast<int64_t>(timestamp * 1000000) , static_cast<int16_t>(x) , static_cast<int16_t>(y) , static_cast<uint8_t>(pol));
         
-        lastEvents_.add(event);
+        lastEvents_.add(event); 
 
         return true;
     }
-
+    
 
     void DatasetStreamer::events(dv::EventStore &_events , int _microseconds){
         lastEvents_ = lastEvents_.sliceTime(_microseconds);

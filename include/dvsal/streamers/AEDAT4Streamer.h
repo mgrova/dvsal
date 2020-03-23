@@ -78,7 +78,13 @@ namespace dvsal{
             return lastEvents_;
         };
 
+
     private:
+        int64_t firstTimestamp_;
+        bool savedFirstTimestamp_ = false;
+
+        dv::EventStore allEvents_;
+
         dv::EventStore lastEvents_;
         std::istream *inputStream_;
         InputInformation *inputInfo_;
