@@ -10,7 +10,7 @@ matrix:
       sudo: true
       compiler: gcc
       env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
       addons:
         apt:
           packages:
