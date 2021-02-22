@@ -45,6 +45,15 @@ target_link_libraries(${PROJECT_NAME} LINK_PUBLIC pthread)
 ######    Loading 3rd party libraries.    ########
 ##################################################
 
+find_package(Qt5 COMPONENTS
+             Core
+             Widgets
+             Gui
+             OpenGL
+             PrintSupport)
+
+find_package(fmt REQUIRED)
+
 find_package(libcaer REQUIRED)
 if (${libcaer_FOUND})
   target_link_libraries(${PROJECT_NAME} LINK_PUBLIC libcaer::caer)

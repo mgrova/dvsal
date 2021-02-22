@@ -49,7 +49,7 @@ int main(int _argc, char **_argv){
         std::cout << UnfiltEvents.size() << std::endl;
 
         if (UnfiltEvents.size() > 1000){
-            dv::EventStore ev = UnfiltEvents.slice(-1000);
+            dv::EventStore ev = UnfiltEvents.slice((size_t) 1000);
             detector->eventCallback(ev);
 
             dv::EventStore corners = detector->cornersDetected();

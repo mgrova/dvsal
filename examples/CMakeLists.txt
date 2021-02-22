@@ -22,7 +22,3 @@
 add_executable(dataset_example dataset_example.cpp)
 target_include_directories(dataset_example PRIVATE ../include)
 target_link_libraries(dataset_example LINK_PUBLIC dvsal)
-
-add_executable(aedat_example aedat_example.cpp)
-target_include_directories(aedat_example PRIVATE ../include)
-target_link_libraries(aedat_example LINK_PUBLIC dvsal)
