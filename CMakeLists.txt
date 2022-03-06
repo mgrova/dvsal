@@ -91,12 +91,6 @@ if(${PCL_FOUND})
   target_compile_definitions(${PROJECT_NAME} PUBLIC "ENABLE_PCL" "DISABLE_PCAP" "DISABLE_PNG" "DISABLE_LIBUSB_1_0")
 endif()
 
-find_package(flow REQUIRED)
-if (${flow_FOUND})
-  target_link_libraries(${PROJECT_NAME} LINK_PUBLIC flow::flow)
-  target_compile_definitions(${PROJECT_NAME} PUBLIC HAS_FLOW)
-endif(${flow_FOUND})
-
 # Compression support
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LZ4 REQUIRED liblz4)
