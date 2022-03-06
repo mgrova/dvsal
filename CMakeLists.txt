@@ -52,6 +52,12 @@ find_package(Qt5 COMPONENTS
              OpenGL
              PrintSupport)
 
+target_link_libraries(${PROJECT_NAME} LINK_PUBLIC  	Qt5::Core 
+							Qt5::Widgets 
+							Qt5::Gui
+							Qt5::OpenGL 
+							Qt5::Printsupport)
+
 find_package(fmt REQUIRED)
 
 find_package(libcaer REQUIRED)
